@@ -2,6 +2,7 @@
 #define CONVAR_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define CVAR_INTERFACE_VERSION "VEngineCvar004"
 
@@ -197,6 +198,16 @@ extern void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE];
     _DEF_CCMD(name, name, desc, _cmdf_##name, flags); \
     static void _cmdf_##name(const CCommand* args) /* { body here } */
 
+typedef struct Color {
+    union {
+        struct {
+            uint8_t r, g, b, a;
+        };
+        uint32_t val;
+        uint8_t bytes[4];
+    };
+} Color;
+
 // Cvar Interface
 ConVar* FindVar(const char* name);
 ConCommand* FindCommand(const char* name);
@@ -209,6 +220,9 @@ void SetIntValue(ConVar* thisptr, int value);
 // Register
 void InitConVar(ConVar* cvar);
 void InitCommand(ConCommand* cmd);
+
+// Color print
+void ConsoleColorPrintf(const Color* clr, const char* fmt, ...);
 
 // Module
 bool LoadCvarModule(void);

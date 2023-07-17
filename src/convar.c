@@ -1,5 +1,6 @@
 #include "convar.h"
 
+#include <stdarg.h>
 #include <string.h>
 
 #include "dbg.h"
@@ -14,6 +15,16 @@ DECL_IFUNC(VCALL_PRIVATE, void, icvar, RegisterConCommand, 6, ConCommandBase*);
 DECL_IFUNC(VCALL_PRIVATE, void, icvar, UnregisterConCommands, 8, int);
 DECL_IFUNC(VCALL_PUBLIC, ConVar*, icvar, FindVar, 12, const char*);
 DECL_IFUNC(VCALL_PUBLIC, ConCommand*, icvar, FindCommand, 14, const char*);
+
+// Can't use macros because of varargs.
+const int vtidx_ConsoleColorPrintf = 23;
+typedef void (*ConsoleColorPrintf_func)(void*, const Color*, const char*, ...);
+void ConsoleColorPrintf(const Color* clr, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    VFUNC(icvar, ConsoleColorPrintf)(icvar, clr, fmt, args);
+    va_end(args);
+}
 
 ConVarVTable vtable_ConVar = {0};
 void* vtable_IConVar[ICONVAR_VTABLE_SIZE] = {0};
@@ -37,11 +48,11 @@ void SetIntValue(ConVar* thisptr, int value) {
     InternalSetIntValue(thisptr->parent, value);
 }
 
-static int DLLIdentifier = 0;
+static int DLL_identifier = 0;
 
-static _ConVar cvarList = {0};
+static _ConVar cvar_list = {0};
 void InitConVar(ConVar* cvar) {
-    static _ConVar* curr = &cvarList;
+    static _ConVar* curr = &cvar_list;
     cvar->str_val = Alloc(cvar->str_len);
     memcpy(cvar->str_val, cvar->default_val, cvar->str_len);
     RegisterConCommand((ConCommandBase*)cvar);
@@ -55,7 +66,7 @@ void InitConVar(ConVar* cvar) {
 void InitCommand(ConCommand* cmd) { RegisterConCommand((ConCommandBase*)cmd); }
 
 static int VCALLCONV GetDLLIdentifier(ConCommandBase* thisptr) {
-    return DLLIdentifier;
+    return DLL_identifier;
 }
 
 bool LoadCvarModule(void) {
@@ -65,7 +76,7 @@ bool LoadCvarModule(void) {
         return false;
     }
 
-    DLLIdentifier = AllocateDLLIdentifier();
+    DLL_identifier = AllocateDLLIdentifier();
 
     /*
      * Instead of building our own vtables for ConVar, IConVar, and ConCommand,
@@ -104,9 +115,9 @@ bool LoadCvarModule(void) {
 }
 
 void UnloadCvarModule(void) {
-    UnregisterConCommands(DLLIdentifier);
+    UnregisterConCommands(DLL_identifier);
 
-    _ConVar* curr = cvarList.next;
+    _ConVar* curr = cvar_list.next;
     while (curr) {
         Free(curr->cvar.str_val);
         curr = curr->next;
