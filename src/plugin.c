@@ -5,16 +5,27 @@
 #include <string.h>
 
 #include "convar.h"
+#include "dbg.h"
 #include "example.h"
 #include "vcall.h"
 
-#define INTERFACEVERSION_ISERVERPLUGINCALLBACKS "ISERVERPLUGINCALLBACKS003"
+#define INTERFACEVERSION_ISERVERPLUGINCALLBACKS "ISERVERPLUGINCALLBACKS002"
+
+static bool plugin_loaded = false;
+static bool skip_unload = false;
 
 CreateInterfaceFn engine_factory = NULL;
 CreateInterfaceFn server_factory = NULL;
 
 static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
                            CreateInterfaceFn gameServerFactory) {
+    if (plugin_loaded) {
+        Warning("Plugin already loaded.\n");
+        skip_unload = true;
+        return false;
+    }
+    plugin_loaded = true;
+
     engine_factory = interfaceFactory;
     server_factory = gameServerFactory;
 
@@ -28,8 +39,14 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
 }
 
 static void VCALLCONV Unload(void *thisptr) {
+    if (skip_unload) {
+        skip_unload = false;
+        return;
+    }
+
     UnloadCvarModule();
     UnloadExampleModule();
+    plugin_loaded = false;
 }
 
 static void VCALLCONV Pause(void *thisptr) {}
@@ -74,10 +91,6 @@ static int VCALLCONV NetworkIDValidated(void *thisptr, void *p1, void *p2) {
 static void VCALLCONV OnQueryCvarValueFinished(void *thisptr, int i1, void *p1,
                                                int i2, void *p2, void *p3) {}
 
-static void VCALLCONV OnEdictAllocated(void *thisptr, void *p) {}
-
-static void VCALLCONV OnEdictFreed(void *thisptr, void *p) {}
-
 static const void *vtable[20] = {
     (void *)&Load,
     (void *)&Unload,
@@ -89,7 +102,6 @@ static const void *vtable[20] = {
     (void *)&GameFrame,
     (void *)&LevelShutdown,
     (void *)&ClientActive,
-    // ClientFullyConnect
     (void *)&ClientDisconnect,
     (void *)&ClientPutInServer,
     (void *)&SetCommandClient,
@@ -98,8 +110,6 @@ static const void *vtable[20] = {
     (void *)&ClientCommand,
     (void *)&NetworkIDValidated,
     (void *)&OnQueryCvarValueFinished,
-    (void *)&OnEdictAllocated,
-    (void *)&OnEdictFreed,
 };
 
 static const void *const *const plugin_obj = vtable;

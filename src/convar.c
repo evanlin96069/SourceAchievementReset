@@ -57,7 +57,7 @@ void InitConVar(ConVar* cvar) {
     memcpy(cvar->str_val, cvar->default_val, cvar->str_len);
     RegisterConCommand((ConCommandBase*)cvar);
 
-    // Should only register our cvar, so upcasing is fine.
+    // Should only register our cvar, so downcasing is fine.
     _ConVar* _cvar = (_ConVar*)cvar;
     curr->next = _cvar;
     curr = curr->next;
