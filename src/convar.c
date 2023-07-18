@@ -84,7 +84,7 @@ bool LoadCvarModule(void) {
      * replace the GetDLLIdentifier.
      */
 
-    ConVar* cvar = FindVar("cl_showpos");
+    ConVar* cvar = FindVar("sv_gravity");
     if (cvar) {
         // ConVar vtable
         // rtti pointers are offset negatively from the vtable pointer.
@@ -96,7 +96,7 @@ bool LoadCvarModule(void) {
         memcpy(&vtable_IConVar, cvar->vtable, sizeof(vtable_IConVar));
     }
 
-    ConCommand* cmd = FindCommand("noclip");
+    ConCommand* cmd = FindCommand("kill");
     if (cmd) {
         // ConCommand vtable
         memcpy(&vtable_ConCommand, cmd->base.vtable, sizeof(vtable_ConCommand));
