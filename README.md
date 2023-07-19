@@ -1,24 +1,24 @@
-# Achievement Plugin
+# SourceAchievementReset
 
-An achievement plugin for Source engine written in C. Useful for practicing all achievment speedrun.
+A plugin that resets achievements for Source engine written in C. Useful for practicing all achievements speedrun.
 
 Tested on Portal 3420, Portal 5135, Portal Steampipe.
 
 > :warning: Although resetting achievements won't get recorded on Steam, **achievements unlocked by this plugin will!** 
 
 ## Commands
-`ach_status`
+`sar_achievement_status`
   - Shows status of all achievements
 
-`ach_reset`
+`sar_achievement_reset`
   - Clears specified achievement
 
-`ach_reset_all`
+`sar_achievement_reset_all`
   - Clears all achievements
 
-`ach_unlock`
+`sar_achievement_unlock`
   - Unlocks specified achievement
 
-`ach_unlock_all`
+`sar_achievement_unlock_all`
   - Unlocks all achievements
 

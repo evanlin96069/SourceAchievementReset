@@ -48,6 +48,10 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
     if (!LoadAchievementModule())
         return false;
 
+    const Color green = {110, 247, 75, 255};
+    ConsoleColorPrintf(&green, "Loaded %s, Version %s\n", PLUGIN_NAME,
+                       PLUGIN_VERSION);
+
     return true;
 }
 
@@ -67,7 +71,7 @@ static void VCALLCONV Pause(void *thisptr) {}
 static void VCALLCONV UnPause(void *this) {}
 
 static const char *VCALLCONV GetPluginDescription(void *thisptr) {
-    return "Achievement Plugin - by evanlin96069";
+    return PLUGIN_NAME;
 }
 
 static void VCALLCONV LevelInit(void *thisptr, const char *map_name) {}

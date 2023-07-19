@@ -35,7 +35,8 @@ static void VCALLCONV Hooked_AwardAchievement(void* thisptr, int id) {
     ConsoleColorPrintf(&green, "Achieved %s!\n", (*iach)->GetName(iach));
 }
 
-CON_COMMAND(ach_status, "Shows status of all achievements", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
+            FCVAR_NONE) {
     int count = (*mgr)->GetAchievementCount(mgr);
     for (int i = 0; i < count; i++) {
         IAchievement* iach = (*mgr)->GetAchievementByIndex(mgr, i);
@@ -83,7 +84,7 @@ static void ResetAchievement(int index) {
     Msg("Failed to reset achievement.\n");
 }
 
-CON_COMMAND(ach_reset, "Clears specified achievement", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
     if (args->argc != 2) {
         Msg("Usage: %s <index>\n", args->argv[0]);
         return;
@@ -98,7 +99,7 @@ CON_COMMAND(ach_reset, "Clears specified achievement", FCVAR_NONE) {
     ResetAchievement(index);
 }
 
-CON_COMMAND(ach_reset_all, "Clears all achievements", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
     int count = (*mgr)->GetAchievementCount(mgr);
     for (int i = 0; i < count; i++) {
         ResetAchievement(i);
@@ -110,7 +111,8 @@ static void UnlockAchievement(int index) {
     (*mgr)->AwardAchievement(mgr, (*iach)->GetAchievementID(iach));
 }
 
-CON_COMMAND(ach_unlock, "Unlocks specified achievement", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
+            FCVAR_NONE) {
     if (args->argc != 2) {
         Msg("Usage: %s <index>\n", args->argv[0]);
         return;
@@ -125,7 +127,8 @@ CON_COMMAND(ach_unlock, "Unlocks specified achievement", FCVAR_NONE) {
     UnlockAchievement(atoi(args->argv[1]));
 }
 
-CON_COMMAND(ach_unlock_all, "Unlocks all achievements", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
+            FCVAR_NONE) {
     int count = (*mgr)->GetAchievementCount(mgr);
     for (int i = 0; i < count; i++) {
         UnlockAchievement(i);
@@ -152,11 +155,11 @@ bool LoadAchievementModule(void) {
     should_unhook = true;
 
     // Init commands
-    InitCommand(ach_status);
-    InitCommand(ach_reset);
-    InitCommand(ach_reset_all);
-    InitCommand(ach_unlock);
-    InitCommand(ach_unlock_all);
+    InitCommand(sar_achievement_status);
+    InitCommand(sar_achievement_reset);
+    InitCommand(sar_achievement_reset_all);
+    InitCommand(sar_achievement_unlock);
+    InitCommand(sar_achievement_unlock_all);
 
     return true;
 }
