@@ -4,18 +4,19 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "achievement.h"
 #include "convar.h"
 #include "dbg.h"
-#include "example.h"
 #include "vcall.h"
-
-#define INTERFACEVERSION_ISERVERPLUGINCALLBACKS "ISERVERPLUGINCALLBACKS002"
 
 static bool plugin_loaded = false;
 static bool skip_unload = false;
 
 CreateInterfaceFn engine_factory = NULL;
 CreateInterfaceFn server_factory = NULL;
+
+void **icvar = NULL;
+void **engine_server = NULL;
 
 static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
                            CreateInterfaceFn gameServerFactory) {
@@ -29,10 +30,22 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
     engine_factory = interfaceFactory;
     server_factory = gameServerFactory;
 
+    icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
+    if (!icvar) {
+        Warning("Failed to get Cvar interface.\n");
+        return false;
+    }
+
+    engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
+    if (!engine_server) {
+        Warning("Failed to get IVEngineServer interface.\n");
+        return false;
+    }
+
     if (!LoadCvarModule())
         return false;
 
-    if (!LoadExampleModule())
+    if (!LoadAchievementModule())
         return false;
 
     return true;
@@ -45,7 +58,7 @@ static void VCALLCONV Unload(void *thisptr) {
     }
 
     UnloadCvarModule();
-    UnloadExampleModule();
+    UnloadAchievementModule();
     plugin_loaded = false;
 }
 
@@ -54,7 +67,7 @@ static void VCALLCONV Pause(void *thisptr) {}
 static void VCALLCONV UnPause(void *this) {}
 
 static const char *VCALLCONV GetPluginDescription(void *thisptr) {
-    return "example plugin";
+    return "Achievement Plugin - by evanlin96069";
 }
 
 static void VCALLCONV LevelInit(void *thisptr, const char *map_name) {}

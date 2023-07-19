@@ -6,9 +6,6 @@
 #include "dbg.h"
 #include "memalloc.h"
 #include "plugin.h"
-#include "vcall.h"
-
-static void* icvar = NULL;
 
 DECL_IFUNC(VCALL_PRIVATE, int, icvar, AllocateDLLIdentifier, 5);
 DECL_IFUNC(VCALL_PRIVATE, void, icvar, RegisterConCommand, 6, ConCommandBase*);
@@ -16,15 +13,7 @@ DECL_IFUNC(VCALL_PRIVATE, void, icvar, UnregisterConCommands, 8, int);
 DECL_IFUNC(VCALL_PUBLIC, ConVar*, icvar, FindVar, 12, const char*);
 DECL_IFUNC(VCALL_PUBLIC, ConCommand*, icvar, FindCommand, 14, const char*);
 
-// Can't use macros because of varargs.
 const int vtidx_ConsoleColorPrintf = 23;
-typedef void (*ConsoleColorPrintf_func)(void*, const Color*, const char*, ...);
-void ConsoleColorPrintf(const Color* clr, const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    VFUNC(icvar, ConsoleColorPrintf)(icvar, clr, fmt, args);
-    va_end(args);
-}
 
 ConVarVTable vtable_ConVar = {0};
 void* vtable_IConVar[ICONVAR_VTABLE_SIZE] = {0};
@@ -53,6 +42,7 @@ static int DLL_identifier = 0;
 static _ConVar cvar_list = {0};
 void InitConVar(ConVar* cvar) {
     static _ConVar* curr = &cvar_list;
+
     cvar->str_val = Alloc(cvar->str_len);
     memcpy(cvar->str_val, cvar->default_val, cvar->str_len);
     RegisterConCommand((ConCommandBase*)cvar);
@@ -70,12 +60,6 @@ static int VCALLCONV GetDLLIdentifier(ConCommandBase* thisptr) {
 }
 
 bool LoadCvarModule(void) {
-    icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
-    if (!icvar) {
-        Warning("Failed to get Cvar interface.\n");
-        return false;
-    }
-
     DLL_identifier = AllocateDLLIdentifier();
 
     /*
@@ -88,12 +72,12 @@ bool LoadCvarModule(void) {
     if (cvar) {
         // ConVar vtable
         // rtti pointers are offset negatively from the vtable pointer.
-        memcpy(&vtable_ConVar, cvar->base.vtable - 1, sizeof(vtable_ConVar));
+        memcpy(&vtable_ConVar, cvar->base1.vtable - 1, sizeof(vtable_ConVar));
 
         // IConVar vtable
         // Although we don't need to replace anything, we still make a copy so
         // the vtable address will be known in compile time.
-        memcpy(&vtable_IConVar, cvar->vtable, sizeof(vtable_IConVar));
+        memcpy(&vtable_IConVar, cvar->base2, sizeof(vtable_IConVar));
     }
 
     ConCommand* cmd = FindCommand("kill");

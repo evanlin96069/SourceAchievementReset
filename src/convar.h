@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define CVAR_INTERFACE_VERSION "VEngineCvar004"
+#include "vcall.h"
 
 // clang-format off
 
@@ -63,7 +63,7 @@ typedef struct ConCommandBase {
 } ConCommandBase;
 
 typedef void (*FnCommandCallbackVoid_t)(void);
-typedef void (*FnCommandCallback_t)(const CCommand* command);
+typedef void (*FnCommandCallback_t)(const CCommand*);
 
 #define COMMAND_COMPLETION_MAXITEMS 64
 #define COMMAND_COMPLETION_ITEM_LENGTH 64
@@ -92,8 +92,8 @@ typedef void (*FnChangeCallback_t)(/* IConVar */ void* var, const char* old_val,
                                    float f_old_val);
 
 typedef struct ConVar {
-    ConCommandBase base;
-    void** vtable;
+    ConCommandBase base1;
+    void** base2;  // IConVar
     struct ConVar* parent;
     const char* default_val;
     char* str_val;
@@ -130,11 +130,11 @@ extern void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE];
 #define _CONVAR(name_, desc, value, hasmin_, min, hasmax_, max, flags_)        \
     static _ConVar _cvar_##name_ = {                                           \
         .cvar =                                                                \
-            {.base = {.vtable = (void**)&vtable_ConVar.vtable,                 \
-                      .name = "" #name_,                                       \
-                      .help_string = "" desc,                                  \
-                      .flags = (flags_)},                                      \
-             .vtable = vtable_IConVar,                                         \
+            {.base1 = {.vtable = (void**)&vtable_ConVar.vtable,                \
+                       .name = "" #name_,                                      \
+                       .help_string = "" desc,                                 \
+                       .flags = (flags_)},                                     \
+             .base2 = vtable_IConVar,                                          \
              .parent = &_cvar_##name_.cvar,                                    \
              .default_val =                                                    \
                  _Generic(value, char*: value, int: #value, double: #value),   \
@@ -198,16 +198,6 @@ extern void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE];
     _DEF_CCMD(name, name, desc, _cmdf_##name, flags); \
     static void _cmdf_##name(const CCommand* args) /* { body here } */
 
-typedef struct Color {
-    union {
-        struct {
-            uint8_t r, g, b, a;
-        };
-        uint32_t val;
-        uint8_t bytes[4];
-    };
-} Color;
-
 // Cvar Interface
 ConVar* FindVar(const char* name);
 ConCommand* FindCommand(const char* name);
@@ -222,7 +212,20 @@ void InitConVar(ConVar* cvar);
 void InitCommand(ConCommand* cmd);
 
 // Color print
-void ConsoleColorPrintf(const Color* clr, const char* fmt, ...);
+typedef struct Color {
+    union {
+        struct {
+            uint8_t r, g, b, a;
+        };
+        uint32_t val;
+        uint8_t bytes[4];
+    };
+} Color;
+
+extern const int vtidx_ConsoleColorPrintf;
+typedef void (*ConsoleColorPrintf_func)(void*, const Color*, const char*, ...);
+#define ConsoleColorPrintf(clr, fmt, ...) \
+    VFUNC(icvar, ConsoleColorPrintf)(icvar, clr, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 // Module
 bool LoadCvarModule(void);
