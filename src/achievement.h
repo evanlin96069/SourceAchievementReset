@@ -1,7 +1,6 @@
 #ifndef ACHIEVEMENT_H
 #define ACHIEVEMENT_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "gameevents.h"
@@ -17,40 +16,40 @@
 #define ACH_FILTER_VICTIM_IS_PLAYER_ENEMY 0x0200
 #define ACH_FILTER_FULL_ROUND_ONLY 0x0400
 
-typedef struct IAchievement* IAchievement;
-typedef struct IAchievementMgr* IAchievementMgr;
+typedef abstract_class IAchievement* IAchievement;
+typedef abstract_class IAchievementMgr* IAchievementMgr;
 typedef struct CBaseAchievementV1 CBaseAchievementV1;
 typedef struct CBaseAchievementV2 CBaseAchievementV2;
 typedef struct CBaseAchievement CBaseAchievement;
 
 extern IAchievementMgr* achievement_mgr;
 
-struct IAchievement {
-    int (*VCALLCONV GetAchievementID)(void* thisptr);
-    const char* (*VCALLCONV GetName)(void* thisptr);
-    int (*VCALLCONV GetFlags)(void* thisptr);
-    int (*VCALLCONV GetGoal)(void* thisptr);
-    int (*VCALLCONV GetCount)(void* thisptr);
-    bool (*VCALLCONV IsAchieved)(void* thisptr);
-    int (*VCALLCONV GetPointValue)(void* thisptr);
-    bool (*VCALLCONV ShouldSaveWithGame)(void* thisptr);
-    bool (*VCALLCONV ShouldHideUntilAchieved)(void* thisptr);
-    bool (*VCALLCONV ShouldShowOnHUD)(void* thisptr);
-    void (*VCALLCONV SetShowOnHUD)(void* thisptr, bool bShow);
+abstract_class IAchievement {
+    int (*virtual GetAchievementID)(void* this);
+    const char* (*virtual GetName)(void* this);
+    int (*virtual GetFlags)(void* this);
+    int (*virtual GetGoal)(void* this);
+    int (*virtual GetCount)(void* this);
+    bool (*virtual IsAchieved)(void* this);
+    int (*virtual GetPointValue)(void* this);
+    bool (*virtual ShouldSaveWithGame)(void* this);
+    bool (*virtual ShouldHideUntilAchieved)(void* this);
+    bool (*virtual ShouldShowOnHUD)(void* this);
+    void (*virtual SetShowOnHUD)(void* this, bool bShow);
 };
 
-struct IAchievementMgr {
-    IAchievement* (*VCALLCONV GetAchievementByIndex)(void* thisptr, int index);
-    CBaseAchievement* (*VCALLCONV GetAchievementByID)(void* thisptr, int id);
-    int (*VCALLCONV GetAchievementCount)(void* thisptr);
-    void (*VCALLCONV InitializeAchievements)(void* thisptr);
-    void (*VCALLCONV AwardAchievement)(void* thisptr, int iAchievementID);
-    void (*VCALLCONV OnMapEvent)(void* thisptr, const char* pchEventName);
-    void (*VCALLCONV DownloadUserData)(void* thisptr);
-    void (*VCALLCONV EnsureGlobalStateLoaded)(void* thisptr);
-    void (*VCALLCONV SaveGlobalStateIfDirty)(void* thisptr, bool bAsync);
-    bool (*VCALLCONV HasAchieved)(void* thisptr, const char* pchName);
-    bool (*VCALLCONV WereCheatsEverOn)(void* thisptr);
+abstract_class IAchievementMgr {
+    IAchievement* (*virtual GetAchievementByIndex)(void* this, int index);
+    CBaseAchievement* (*virtual GetAchievementByID)(void* this, int id);
+    int (*virtual GetAchievementCount)(void* this);
+    void (*virtual InitializeAchievements)(void* this);
+    void (*virtual AwardAchievement)(void* this, int iAchievementID);
+    void (*virtual OnMapEvent)(void* this, const char* pchEventName);
+    void (*virtual DownloadUserData)(void* this);
+    void (*virtual EnsureGlobalStateLoaded)(void* this);
+    void (*virtual SaveGlobalStateIfDirty)(void* this, bool bAsync);
+    bool (*virtual HasAchieved)(void* this, const char* pchName);
+    bool (*virtual WereCheatsEverOn)(void* this);
 };
 
 // 3420

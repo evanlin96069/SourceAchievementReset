@@ -3,15 +3,15 @@
 #include "convar.h"
 #include "dbg.h"
 #include "hook.h"
+#include "interfaces.h"
 #include "plugin.h"
 
 #define mgr achievement_mgr
 IAchievementMgr* achievement_mgr = NULL;
 
-DECL_IFUNC(VCALL_PRIVATE, IAchievementMgr*, engine_server, GetAchievementMgr,
-           100);
+DECL_IFUNC(PRIVATE, IAchievementMgr*, engine_server, GetAchievementMgr, 100);
 
-typedef void (*VCALLCONV AwardAchievement_func)(void*, int);
+typedef void (*virtual AwardAchievement_func)(void*, int);
 static AwardAchievement_func orig_AwardAchievement = NULL;
 
 static const Color white = {255, 255, 255, 255};
@@ -23,8 +23,8 @@ static inline CBaseAchievement* GetBaseAchievement(IAchievement* iach) {
     return (CBaseAchievement*)((uint8_t*)iach - sizeof(CGameEventListener));
 }
 
-static void VCALLCONV Hooked_AwardAchievement(void* thisptr, int id) {
-    orig_AwardAchievement(thisptr, id);
+static void virtual Hooked_AwardAchievement(void* this, int id) {
+    orig_AwardAchievement(this, id);
     CBaseAchievement* ach = (*mgr)->GetAchievementByID(mgr, id);
     if (!ach)
         return;
@@ -37,8 +37,8 @@ static void VCALLCONV Hooked_AwardAchievement(void* thisptr, int id) {
                        (*iach)->GetName(iach));
 }
 
-static void VCALLCONV dtor(void* thisptr) {}
-static void VCALLCONV FireGameEvent(void* thisptr, IGameEvent* event) {
+static void virtual dtor(void* this) {}
+static void virtual FireGameEvent(void* this, IGameEvent* event) {
     const char* event_name = (*event)->GetName(event);
     Msg("Event %s fired\n", event_name);
     if (strcmp(event_name, "achievement_event") == 0) {

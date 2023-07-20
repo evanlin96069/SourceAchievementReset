@@ -17,6 +17,8 @@
 #ifndef INC_VCALL_H
 #define INC_VCALL_H
 
+#include <stdbool.h>
+
 /*
  * Convenient facilities for calling simple (single-table) virtual functions on
  * possibly-opaque pointers to C++ objects.
@@ -24,19 +26,21 @@
 
 #ifdef _WIN32
 #if defined(__GNUC__) || defined(__clang__)
-#define VCALLCONV __thiscall
+#define virtual __thiscall
 #else
 // XXX: could support MSVC via __fastcall and dummy param, but is there a point?
 #error C __thiscall support requires Clang or GCC
 #endif
 #else
-#define VCALLCONV
+#define virtual
 #endif
 
 // Don't expose the symbol
-#define VCALL_PRIVATE static inline
+#define PRIVATE static inline
 // Expose the symbol
-#define VCALL_PUBLIC
+#define PUBLIC
+
+#define abstract_class struct
 
 // black magic argument list maker thingmy, similar to the PPMAGIC_MAP thing,
 // but slightly different, so we get to have all this nonsense twice. not sorry
@@ -131,7 +135,7 @@
 
 /* Define a virtual function with a known index */
 #define DECL_VFUNC(spec, ret, name, idx, ...) \
-    _DECL_VFUNC(spec, ret, VCALLCONV, name, idx __VA_OPT__(, ) __VA_ARGS__)
+    _DECL_VFUNC(spec, ret, virtual, name, idx __VA_OPT__(, ) __VA_ARGS__)
 
 /* Define a virtual function with a known index, without thiscall convention */
 #define DECL_VFUNC_CDECL(spec, ret, name, idx, ...) \
@@ -139,7 +143,7 @@
 
 /* Define a virtual function with an index defined elsewhere */
 #define DECL_VFUNC_DYN(spec, ret, name, ...) \
-    _DECL_VFUNC_DYN(spec, ret, VCALLCONV, name __VA_OPT__(, ) __VA_ARGS__)
+    _DECL_VFUNC_DYN(spec, ret, virtual, name __VA_OPT__(, ) __VA_ARGS__)
 
 /* Define a virtual function with an index defined elsewhere, without thiscall
  */
@@ -160,10 +164,10 @@
 
 /* Define an interface virtual function with a known index */
 #define DECL_IFUNC(spec, ret, interface, name, idx, ...) \
-    _DECL_IFUNC(spec, ret, VCALLCONV, interface, name, idx, __VA_ARGS__)
+    _DECL_IFUNC(spec, ret, virtual, interface, name, idx, __VA_ARGS__)
 
 /* Define an interface virtual function with an index defined elsewhere */
 #define DECL_IFUNC_DYN(spec, ret, interface, name, idx, ...) \
-    _DECL_IFUNC_DYN(spec, ret, VCALLCONV, interface, name, idx, __VA_ARGS__)
+    _DECL_IFUNC_DYN(spec, ret, virtual, interface, name, idx, __VA_ARGS__)
 
 // vi: sw=4 ts=4 noet tw=80 cc=80

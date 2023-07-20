@@ -4,14 +4,14 @@
 #include <string.h>
 
 #include "dbg.h"
+#include "interfaces.h"
 #include "memalloc.h"
-#include "plugin.h"
 
-DECL_IFUNC(VCALL_PRIVATE, int, icvar, AllocateDLLIdentifier, 5);
-DECL_IFUNC(VCALL_PRIVATE, void, icvar, RegisterConCommand, 6, ConCommandBase*);
-DECL_IFUNC(VCALL_PRIVATE, void, icvar, UnregisterConCommands, 8, int);
-DECL_IFUNC(VCALL_PUBLIC, ConVar*, icvar, FindVar, 12, const char*);
-DECL_IFUNC(VCALL_PUBLIC, ConCommand*, icvar, FindCommand, 14, const char*);
+DECL_IFUNC(PRIVATE, int, icvar, AllocateDLLIdentifier, 5);
+DECL_IFUNC(PRIVATE, void, icvar, RegisterConCommand, 6, ConCommandBase*);
+DECL_IFUNC(PRIVATE, void, icvar, UnregisterConCommands, 8, int);
+DECL_IFUNC(PUBLIC, ConVar*, icvar, FindVar, 12, const char*);
+DECL_IFUNC(PUBLIC, ConCommand*, icvar, FindCommand, 14, const char*);
 
 const int vtidx_ConsoleColorPrintf = 23;
 
@@ -21,20 +21,20 @@ void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE] = {0};
 
 const int vtidx_GetDLLIdentifier = 7;
 
-DECL_VFUNC(VCALL_PRIVATE, void, InternalSetValue, 10, const char*);
-DECL_VFUNC(VCALL_PRIVATE, void, InternalSetFloatValue, 11, float);
-DECL_VFUNC(VCALL_PRIVATE, void, InternalSetIntValue, 12, int);
+DECL_VFUNC(PRIVATE, void, InternalSetValue, 10, const char*);
+DECL_VFUNC(PRIVATE, void, InternalSetFloatValue, 11, float);
+DECL_VFUNC(PRIVATE, void, InternalSetIntValue, 12, int);
 
-void SetValue(ConVar* thisptr, const char* value) {
-    InternalSetValue(thisptr->parent, value);
+void SetValue(ConVar* this, const char* value) {
+    InternalSetValue(this->parent, value);
 }
 
-void SetFloatValue(ConVar* thisptr, float value) {
-    InternalSetFloatValue(thisptr->parent, value);
+void SetFloatValue(ConVar* this, float value) {
+    InternalSetFloatValue(this->parent, value);
 }
 
-void SetIntValue(ConVar* thisptr, int value) {
-    InternalSetIntValue(thisptr->parent, value);
+void SetIntValue(ConVar* this, int value) {
+    InternalSetIntValue(this->parent, value);
 }
 
 static int DLL_identifier = 0;
@@ -55,7 +55,7 @@ void InitConVar(ConVar* cvar) {
 
 void InitCommand(ConCommand* cmd) { RegisterConCommand((ConCommandBase*)cmd); }
 
-static int VCALLCONV GetDLLIdentifier(ConCommandBase* thisptr) {
+static int virtual GetDLLIdentifier(ConCommandBase* this) {
     return DLL_identifier;
 }
 

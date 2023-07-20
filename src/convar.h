@@ -1,20 +1,19 @@
 #ifndef CONVAR_H
 #define CONVAR_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "vcall.h"
 
 #define CVAR_INTERFACE_VERSION "VEngineCvar004"
 
+typedef void* ICvar;
+
 typedef struct CCommand CCommand;
 typedef struct ConCommandBase ConCommandBase;
 typedef struct ConCommand ConCommand;
-typedef struct IConVar* IConVar;
+typedef abstract_class IConVar* IConVar;
 typedef struct ConVar ConVar;
-
-extern void** icvar;
 
 // clang-format off
 
@@ -98,14 +97,14 @@ struct ConCommand {
     bool using_icallback : 1;
 };
 
-struct IConVar {
+abstract_class IConVar {
     // Reverse order because of overload ordering
-    void (*VCALLCONV SetValue_i)(void* thisptr, int nValue);
-    void (*VCALLCONV SetValue_f)(void* thisptr, float flValue);
-    void (*VCALLCONV SetValue)(void* thisptr, const char* pValue);
+    void (*virtual SetValue_i)(void* this, int nValue);
+    void (*virtual SetValue_f)(void* this, float flValue);
+    void (*virtual SetValue)(void* this, const char* pValue);
 
-    const char* (*VCALLCONV GetName)(void* thisptr);
-    bool (*VCALLCONV IsFlagSet)(void* thisptr, int nFlag);
+    const char* (*virtual GetName)(void* this);
+    bool (*virtual IsFlagSet)(void* this, int nFlag);
 };
 
 typedef void (*FnChangeCallback_t)(IConVar* var, const char* old_val,
@@ -223,9 +222,9 @@ ConVar* FindVar(const char* name);
 ConCommand* FindCommand(const char* name);
 
 // ConVar
-void SetValue(ConVar* thisptr, const char* value);
-void SetFloatValue(ConVar* thisptr, float value);
-void SetIntValue(ConVar* thisptr, int value);
+void SetValue(ConVar* this, const char* value);
+void SetFloatValue(ConVar* this, float value);
+void SetIntValue(ConVar* this, int value);
 
 // Register
 void InitConVar(ConVar* cvar);

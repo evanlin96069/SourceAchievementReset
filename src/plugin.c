@@ -7,6 +7,7 @@
 #include "achievement.h"
 #include "convar.h"
 #include "dbg.h"
+#include "interfaces.h"
 #include "vcall.h"
 
 static bool plugin_loaded = false;
@@ -15,12 +16,8 @@ static bool skip_unload = false;
 CreateInterfaceFn engine_factory = NULL;
 CreateInterfaceFn server_factory = NULL;
 
-void **icvar = NULL;
-void **engine_server = NULL;
-IGameEventManager2 *game_event_mgr = NULL;
-
-static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
-                           CreateInterfaceFn gameServerFactory) {
+static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
+                         CreateInterfaceFn gameServerFactory) {
     if (plugin_loaded) {
         Warning("Plugin already loaded.\n");
         skip_unload = true;
@@ -33,7 +30,7 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
 
     icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
     if (!icvar) {
-        Warning("Failed to get Cvar interface.\n");
+        Warning("Failed to get ICvar interface.\n");
         return false;
     }
 
@@ -62,7 +59,7 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
     return true;
 }
 
-static void VCALLCONV Unload(void *thisptr) {
+static void virtual Unload(void *this) {
     if (skip_unload) {
         skip_unload = false;
         return;
@@ -73,47 +70,45 @@ static void VCALLCONV Unload(void *thisptr) {
     plugin_loaded = false;
 }
 
-static void VCALLCONV Pause(void *thisptr) {}
+static void virtual Pause(void *this) {}
 
-static void VCALLCONV UnPause(void *this) {}
+static void virtual UnPause(void *this) {}
 
-static const char *VCALLCONV GetPluginDescription(void *thisptr) {
-    return PLUGIN_NAME " - " PLUGIN_VERSION;
+static const char *virtual GetPluginDescription(void *this) {
+    return PLUGIN_NAME " " PLUGIN_VERSION;
 }
 
-static void VCALLCONV LevelInit(void *thisptr, const char *map_name) {}
+static void virtual LevelInit(void *this, const char *map_name) {}
 
-static void VCALLCONV ServerActivate(void *thisptr, void *p, int i1, int i2) {}
+static void virtual ServerActivate(void *this, void *p, int i1, int i2) {}
 
-static void VCALLCONV GameFrame(void *thisptr, bool b) {}
+static void virtual GameFrame(void *this, bool b) {}
 
-static void VCALLCONV LevelShutdown(void *thisptr) {}
+static void virtual LevelShutdown(void *this) {}
 
-static void VCALLCONV ClientActive(void *thisptr, void *p) {}
+static void virtual ClientActive(void *this, void *p) {}
 
-static void VCALLCONV ClientDisconnect(void *thisptr, void *p) {}
+static void virtual ClientDisconnect(void *this, void *p) {}
 
-static void VCALLCONV ClientPutInServer(void *thisptr, void *p1, void *p2) {}
+static void virtual ClientPutInServer(void *this, void *p1, void *p2) {}
 
-static void VCALLCONV SetCommandClient(void *thisptr, int i) {}
+static void virtual SetCommandClient(void *this, int i) {}
 
-static void VCALLCONV ClientSettingsChanged(void *thisptr, void *p) {}
+static void virtual ClientSettingsChanged(void *this, void *p) {}
 
-static int VCALLCONV ClientConnect(void *thisptr, void *p1, void *p2, void *p3,
-                                   void *p4, void *p5, int i) {
+static int virtual ClientConnect(void *this, void *p1, void *p2, void *p3,
+                                 void *p4, void *p5, int i) {
     return 0;
 }
 
-static int VCALLCONV ClientCommand(void *thisptr, void *p1, void *p2) {
+static int virtual ClientCommand(void *this, void *p1, void *p2) { return 0; }
+
+static int virtual NetworkIDValidated(void *this, void *p1, void *p2) {
     return 0;
 }
 
-static int VCALLCONV NetworkIDValidated(void *thisptr, void *p1, void *p2) {
-    return 0;
-}
-
-static void VCALLCONV OnQueryCvarValueFinished(void *thisptr, int i1, void *p1,
-                                               int i2, void *p2, void *p3) {}
+static void virtual OnQueryCvarValueFinished(void *this, int i1, void *p1,
+                                             int i2, void *p2, void *p3) {}
 
 static const void *vtable[20] = {
     (void *)&Load,
