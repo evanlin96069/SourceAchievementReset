@@ -13,13 +13,13 @@ DECL_IFUNC(PRIVATE, void, icvar, UnregisterConCommands, 8, int);
 DECL_IFUNC(PUBLIC, ConVar*, icvar, FindVar, 12, const char*);
 DECL_IFUNC(PUBLIC, ConCommand*, icvar, FindCommand, 14, const char*);
 
-const int vtidx_ConsoleColorPrintf = 23;
+static const int vtidx_ConsoleColorPrintf = 23;
 
 ConVarVTable vtable_ConVar = {0};
 void* vtable_IConVar[ICONVAR_VTABLE_SIZE] = {0};
 void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE] = {0};
 
-const int vtidx_GetDLLIdentifier = 7;
+static const int vtidx_GetDLLIdentifier = 7;
 
 DECL_VFUNC(PRIVATE, void, InternalSetValue, 10, const char*);
 DECL_VFUNC(PRIVATE, void, InternalSetFloatValue, 11, float);
@@ -60,6 +60,12 @@ static int virtual GetDLLIdentifier(ConCommandBase* this) {
 }
 
 bool LoadCvarModule(void) {
+    icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
+    if (!icvar) {
+        Warning("Failed to get ICvar interface.\n");
+        return false;
+    }
+
     DLL_identifier = AllocateDLLIdentifier();
 
     /*

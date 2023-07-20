@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "color.h"
 #include "vcall.h"
 
 #define CVAR_INTERFACE_VERSION "VEngineCvar004"
@@ -231,16 +232,6 @@ void InitConVar(ConVar* cvar);
 void InitCommand(ConCommand* cmd);
 
 // Color print
-typedef struct Color {
-    union {
-        struct {
-            uint8_t r, g, b, a;
-        };
-        uint32_t val;
-        uint8_t bytes[4];
-    };
-} Color;
-
 extern const int vtidx_ConsoleColorPrintf;
 typedef void (*ConsoleColorPrintf_func)(void*, const Color*, const char*, ...);
 #define ConsoleColorPrintf(clr, fmt, ...) \

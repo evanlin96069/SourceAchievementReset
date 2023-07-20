@@ -1,12 +1,13 @@
 #include "achievement.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "convar.h"
 #include "dbg.h"
 #include "hook.h"
 #include "interfaces.h"
-#include "plugin.h"
 
-#define mgr achievement_mgr
 IAchievementMgr* achievement_mgr = NULL;
 
 DECL_IFUNC(PRIVATE, IAchievementMgr*, engine_server, GetAchievementMgr, 100);
@@ -25,7 +26,8 @@ static inline CBaseAchievement* GetBaseAchievement(IAchievement* iach) {
 
 static void virtual Hooked_AwardAchievement(void* this, int id) {
     orig_AwardAchievement(this, id);
-    CBaseAchievement* ach = (*mgr)->GetAchievementByID(mgr, id);
+    CBaseAchievement* ach =
+        (*achievement_mgr)->GetAchievementByID(achievement_mgr, id);
     if (!ach)
         return;
     IAchievement* iach = &ach->base2;
@@ -65,9 +67,10 @@ CGameEventListener listener = {
 
 CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
             FCVAR_NONE) {
-    int count = (*mgr)->GetAchievementCount(mgr);
+    int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
-        IAchievement* iach = (*mgr)->GetAchievementByIndex(mgr, i);
+        IAchievement* iach =
+            (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, i);
 
         ConsoleColorPrintf(&white, "%3d: ", i);
         if ((*iach)->IsAchieved(iach)) {
@@ -81,7 +84,8 @@ CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
 }
 
 static void ResetAchievement(int index) {
-    IAchievement* iach = (*mgr)->GetAchievementByIndex(mgr, index);
+    IAchievement* iach =
+        (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
     CBaseAchievement* base = GetBaseAchievement(iach);
 
     const char* name = (*iach)->GetName(iach);
@@ -119,7 +123,8 @@ CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
     }
 
     int index = atoi(args->argv[1]);
-    if (index < 0 || index >= (*mgr)->GetAchievementCount(mgr)) {
+    if (index < 0 ||
+        index >= (*achievement_mgr)->GetAchievementCount(achievement_mgr)) {
         Msg("Invalid achievement index.\n");
         return;
     }
@@ -128,15 +133,17 @@ CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
 }
 
 CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
-    int count = (*mgr)->GetAchievementCount(mgr);
+    int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
         ResetAchievement(i);
     }
 }
 
 static void UnlockAchievement(int index) {
-    IAchievement* iach = (*mgr)->GetAchievementByIndex(mgr, index);
-    (*mgr)->AwardAchievement(mgr, (*iach)->GetAchievementID(iach));
+    IAchievement* iach =
+        (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
+    (*achievement_mgr)
+        ->AwardAchievement(achievement_mgr, (*iach)->GetAchievementID(iach));
 }
 
 CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
@@ -147,7 +154,8 @@ CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
     }
 
     int index = atoi(args->argv[1]);
-    if (index < 0 || index >= (*mgr)->GetAchievementCount(mgr)) {
+    if (index < 0 ||
+        index >= (*achievement_mgr)->GetAchievementCount(achievement_mgr)) {
         Msg("Invalid achievement index.\n");
         return;
     }
@@ -157,14 +165,15 @@ CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
 
 CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
             FCVAR_NONE) {
-    int count = (*mgr)->GetAchievementCount(mgr);
+    int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
         UnlockAchievement(i);
     }
 }
 
-static bool should_unhook = false;
+static bool should_unhook;
 bool LoadAchievementModule(void) {
+    should_unhook = false;
     achievement_mgr = GetAchievementMgr();
     if (!achievement_mgr) {
         Warning("Failed to get IAchievementMgr interface.\n");
@@ -172,13 +181,13 @@ bool LoadAchievementModule(void) {
     }
 
     // Hook
-    if (!Unprotect(&(*achievement_mgr)->AwardAchievement)) {
-        Warning("Failed to make vtable writable\n");
+    orig_AwardAchievement =
+        HookVirtual((void**)&(*achievement_mgr)->AwardAchievement,
+                    &Hooked_AwardAchievement);
+    if (!orig_AwardAchievement) {
+        Warning("Failed to hook AwardAchievement.\n");
         return false;
     }
-
-    orig_AwardAchievement = (*achievement_mgr)->AwardAchievement;
-    (*achievement_mgr)->AwardAchievement = &Hooked_AwardAchievement;
 
     should_unhook = true;
 
@@ -197,7 +206,8 @@ bool LoadAchievementModule(void) {
 void UnloadAchievementModule(void) {
     // Unhook
     if (should_unhook) {
-        (*achievement_mgr)->AwardAchievement = orig_AwardAchievement;
+        UnhookVirtual((void**)&(*achievement_mgr)->AwardAchievement,
+                      orig_AwardAchievement);
     }
     StopListeningForAllEvents(&listener);
 }

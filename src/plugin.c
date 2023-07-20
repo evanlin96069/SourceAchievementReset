@@ -13,9 +13,6 @@
 static bool plugin_loaded = false;
 static bool skip_unload = false;
 
-CreateInterfaceFn engine_factory = NULL;
-CreateInterfaceFn server_factory = NULL;
-
 static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
                          CreateInterfaceFn gameServerFactory) {
     if (plugin_loaded) {
@@ -27,12 +24,6 @@ static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
 
     engine_factory = interfaceFactory;
     server_factory = gameServerFactory;
-
-    icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
-    if (!icvar) {
-        Warning("Failed to get ICvar interface.\n");
-        return false;
-    }
 
     engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
     if (!engine_server) {
@@ -47,6 +38,9 @@ static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
     }
 
     if (!LoadCvarModule())
+        return false;
+
+    if (!LoadHudModule())
         return false;
 
     if (!LoadAchievementModule())
@@ -66,6 +60,7 @@ static void virtual Unload(void *this) {
     }
 
     UnloadCvarModule();
+    UnloadHudModule();
     UnloadAchievementModule();
     plugin_loaded = false;
 }
@@ -140,5 +135,5 @@ __declspec(dllexport) const void *CreateInterface(const char *name, int *ret) {
     }
     if (ret)
         *ret = 1;
-    return 0;
+    return NULL;
 }

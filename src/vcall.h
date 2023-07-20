@@ -159,7 +159,7 @@
         VCALL(interface, name __VA_OPT__(, ) _VCALL_PASSARGS(__VA_ARGS__)); \
     }
 #define _DECL_IFUNC(spec, ret, conv, interface, name, idx, ...) \
-    const int vtidx_##name = (idx);                             \
+    static const int vtidx_##name = (idx);                      \
     _DECL_IFUNC_DYN(spec, ret, conv, interface, name, idx, __VA_ARGS__)
 
 /* Define an interface virtual function with a known index */

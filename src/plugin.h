@@ -6,9 +6,4 @@
 
 #define INTERFACEVERSION_ISERVERPLUGINCALLBACKS "ISERVERPLUGINCALLBACKS002"
 
-typedef void *(*CreateInterfaceFn)(const char *name, int *ret);
-
-extern CreateInterfaceFn engine_factory;
-extern CreateInterfaceFn server_factory;
-
 #endif
