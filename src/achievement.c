@@ -17,14 +17,13 @@ static AwardAchievement_func orig_AwardAchievement = NULL;
 static const Color white = {255, 255, 255, 255};
 static const Color green = {0, 255, 0, 255};
 static const Color red = {255, 0, 0, 255};
+static const Color cyan = {0, 255, 255, 255};
 
 static inline CBaseAchievement* GetBaseAchievement(IAchievement* iach) {
     return (CBaseAchievement*)((uint8_t*)iach - sizeof(CGameEventListener));
 }
 
 static void VCALLCONV Hooked_AwardAchievement(void* thisptr, int id) {
-    // Actually, the function we want is CBaseAchievement::IncrementCount
-    // but that's not a virtual function
     orig_AwardAchievement(thisptr, id);
     CBaseAchievement* ach = (*mgr)->GetAchievementByID(mgr, id);
     if (!ach)
@@ -32,8 +31,37 @@ static void VCALLCONV Hooked_AwardAchievement(void* thisptr, int id) {
     IAchievement* iach = &ach->base2;
     if (!(*iach)->IsAchieved(iach))
         return;
-    ConsoleColorPrintf(&green, "Achieved %s!\n", (*iach)->GetName(iach));
+    ConsoleColorPrintf(&green,
+                       "Achievement Unlocked!\n"
+                       "%s\n",
+                       (*iach)->GetName(iach));
 }
+
+static void VCALLCONV dtor(void* thisptr) {}
+static void VCALLCONV FireGameEvent(void* thisptr, IGameEvent* event) {
+    const char* event_name = (*event)->GetName(event);
+    Msg("Event %s fired\n", event_name);
+    if (strcmp(event_name, "achievement_event") == 0) {
+        const char* achievement_name =
+            (*event)->GetString(event, "achievement_name", NULL);
+        int cur_val = (*event)->GetInt(event, "cur_val", -1);
+        int max_val = (*event)->GetInt(event, "max_val", -1);
+        ConsoleColorPrintf(&cyan,
+                           "Achievement Progress!\n"
+                           "%s (%d/%d)\n",
+                           achievement_name, cur_val, max_val);
+    }
+}
+
+struct IGameEventListener2 listener_vtable = {
+    &dtor,
+    &FireGameEvent,
+};
+
+CGameEventListener listener = {
+    .base = &listener_vtable,
+    .registered_for_events = false,
+};
 
 CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
             FCVAR_NONE) {
@@ -154,6 +182,8 @@ bool LoadAchievementModule(void) {
 
     should_unhook = true;
 
+    ListenForGameEvent(&listener, "achievement_event", false);
+
     // Init commands
     InitCommand(sar_achievement_status);
     InitCommand(sar_achievement_reset);
@@ -169,4 +199,5 @@ void UnloadAchievementModule(void) {
     if (should_unhook) {
         (*achievement_mgr)->AwardAchievement = orig_AwardAchievement;
     }
+    StopListeningForAllEvents(&listener);
 }

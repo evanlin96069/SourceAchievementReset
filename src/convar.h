@@ -6,6 +6,15 @@
 
 #include "vcall.h"
 
+#define CVAR_INTERFACE_VERSION "VEngineCvar004"
+
+typedef struct CCommand CCommand;
+typedef struct ConCommandBase ConCommandBase;
+typedef struct ConCommand ConCommand;
+typedef struct ConVar ConVar;
+
+extern void** icvar;
+
 // clang-format off
 
 // ConVars and ConCommands flags
@@ -45,22 +54,22 @@
 #define COMMAND_MAX_ARGC 64
 #define COMMAND_MAX_LENGTH 512
 
-typedef struct CCommand {
+struct CCommand {
     int argc;
     int argv_0_size;
     char args_buffer[COMMAND_MAX_LENGTH];
     char argv_buffer[COMMAND_MAX_LENGTH];
     const char* argv[COMMAND_MAX_ARGC];
-} CCommand;
+};
 
-typedef struct ConCommandBase {
+struct ConCommandBase {
     void** vtable;
-    struct ConCommandBase* next;
+    ConCommandBase* next;
     bool registered;
     const char* name;
     const char* help_string;
     int flags;
-} ConCommandBase;
+};
 
 typedef void (*FnCommandCallbackVoid_t)(void);
 typedef void (*FnCommandCallback_t)(const CCommand*);
@@ -72,7 +81,7 @@ typedef int (*FnCommandCompletionCallback)(
     const char* partial,
     char commands[COMMAND_COMPLETION_MAXITEMS][COMMAND_COMPLETION_ITEM_LENGTH]);
 
-typedef struct ConCommand {
+struct ConCommand {
     ConCommandBase base;
     union {
         FnCommandCallbackVoid_t callback_v1;
@@ -86,12 +95,12 @@ typedef struct ConCommand {
     bool has_completion_callback : 1;
     bool using_new_callback : 1;
     bool using_icallback : 1;
-} ConCommand;
+};
 
 typedef void (*FnChangeCallback_t)(/* IConVar */ void* var, const char* old_val,
                                    float f_old_val);
 
-typedef struct ConVar {
+struct ConVar {
     ConCommandBase base1;
     void** base2;  // IConVar
     struct ConVar* parent;
@@ -105,7 +114,7 @@ typedef struct ConVar {
     bool has_max;
     float max_val;
     FnChangeCallback_t change_callback;
-} ConVar;
+};
 
 // An internal ConVar list for deallocating all of them when the plugin unload
 typedef struct _ConVar {

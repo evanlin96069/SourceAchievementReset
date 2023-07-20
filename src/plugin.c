@@ -17,6 +17,7 @@ CreateInterfaceFn server_factory = NULL;
 
 void **icvar = NULL;
 void **engine_server = NULL;
+IGameEventManager2 *game_event_mgr = NULL;
 
 static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
                            CreateInterfaceFn gameServerFactory) {
@@ -39,6 +40,12 @@ static bool VCALLCONV Load(void *thisptr, CreateInterfaceFn interfaceFactory,
     engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
     if (!engine_server) {
         Warning("Failed to get IVEngineServer interface.\n");
+        return false;
+    }
+
+    game_event_mgr = engine_factory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
+    if (!game_event_mgr) {
+        Warning("Failed to get IGameEventManager2 interface.\n");
         return false;
     }
 
@@ -71,7 +78,7 @@ static void VCALLCONV Pause(void *thisptr) {}
 static void VCALLCONV UnPause(void *this) {}
 
 static const char *VCALLCONV GetPluginDescription(void *thisptr) {
-    return PLUGIN_NAME;
+    return PLUGIN_NAME " - " PLUGIN_VERSION;
 }
 
 static void VCALLCONV LevelInit(void *thisptr, const char *map_name) {}

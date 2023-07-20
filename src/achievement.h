@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "gameevents.h"
 #include "vcall.h"
 
 #define ACH_LISTEN_KILL_EVENTS 0x0001
@@ -18,7 +19,6 @@
 
 typedef struct IAchievement* IAchievement;
 typedef struct IAchievementMgr* IAchievementMgr;
-typedef struct CGameEventListener CGameEventListener;
 typedef struct CBaseAchievementV1 CBaseAchievementV1;
 typedef struct CBaseAchievementV2 CBaseAchievementV2;
 typedef struct CBaseAchievement CBaseAchievement;
@@ -51,11 +51,6 @@ struct IAchievementMgr {
     void (*VCALLCONV SaveGlobalStateIfDirty)(void* thisptr, bool bAsync);
     bool (*VCALLCONV HasAchieved)(void* thisptr, const char* pchName);
     bool (*VCALLCONV WereCheatsEverOn)(void* thisptr);
-};
-
-struct CGameEventListener {
-    void** vtable;
-    bool registered_for_events;
 };
 
 // 3420
