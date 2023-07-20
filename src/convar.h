@@ -11,6 +11,7 @@
 typedef struct CCommand CCommand;
 typedef struct ConCommandBase ConCommandBase;
 typedef struct ConCommand ConCommand;
+typedef struct IConVar* IConVar;
 typedef struct ConVar ConVar;
 
 extern void** icvar;
@@ -97,12 +98,22 @@ struct ConCommand {
     bool using_icallback : 1;
 };
 
-typedef void (*FnChangeCallback_t)(/* IConVar */ void* var, const char* old_val,
+struct IConVar {
+    // Reverse order because of overload ordering
+    void (*VCALLCONV SetValue_i)(void* thisptr, int nValue);
+    void (*VCALLCONV SetValue_f)(void* thisptr, float flValue);
+    void (*VCALLCONV SetValue)(void* thisptr, const char* pValue);
+
+    const char* (*VCALLCONV GetName)(void* thisptr);
+    bool (*VCALLCONV IsFlagSet)(void* thisptr, int nFlag);
+};
+
+typedef void (*FnChangeCallback_t)(IConVar* var, const char* old_val,
                                    float f_old_val);
 
 struct ConVar {
     ConCommandBase base1;
-    void** base2;  // IConVar
+    IConVar base2;
     struct ConVar* parent;
     const char* default_val;
     char* str_val;
@@ -143,7 +154,7 @@ extern void* vtable_ConCommand[CONCOMMAND_VTABLE_SIZE];
                        .name = "" #name_,                                      \
                        .help_string = "" desc,                                 \
                        .flags = (flags_)},                                     \
-             .base2 = vtable_IConVar,                                          \
+             .base2 = (IConVar)vtable_IConVar,                                 \
              .parent = &_cvar_##name_.cvar,                                    \
              .default_val =                                                    \
                  _Generic(value, char*: value, int: #value, double: #value),   \
