@@ -11,10 +11,13 @@
 #define VENGINE_VGUI_VERSION "VEngineVGui001"
 #define VGUI_SCHEME_INTERFACE_VERSION "VGUI_Scheme010"
 #define VGUI_PANEL_INTERFACE_VERSION "VGUI_Panel009"
+#define VGUI_LOCALIZE_INTERFACE_VERSION_4 "VGUI_Localize004"
+#define VGUI_LOCALIZE_INTERFACE_VERSION_5 "VGUI_Localize005"
 
 typedef void* IMatSystemSurface;
 typedef void* ISchemeManager;
 typedef void* IPanel;
+typedef void* ILocalize;
 typedef void* IScheme;
 typedef abstract_class IEngineVGui* IEngineVGui;
 
@@ -59,6 +62,9 @@ void DrawPrintText(const wchar_t* text, int textLen, FontDrawType_t drawType);
 void GetScreenSize(int* wide, int* tall);
 int GetFontTall(HFont font);
 int GetCharacterWidth(HFont font, int ch);
+
+// ILocalize
+const wchar_t* ILocalizeFind(char const* tokenName);
 
 // IScheme
 HFont GetFont(const char* fontName, bool proportional);

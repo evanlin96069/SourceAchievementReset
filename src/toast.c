@@ -21,8 +21,7 @@
 
 typedef struct Toast {
     wchar_t title[TOAST_STRING_MAX];
-    wchar_t desc1[TOAST_STRING_MAX];
-    wchar_t desc2[TOAST_STRING_MAX];
+    wchar_t desc[TOAST_STRING_MAX];
     clock_t duration;
     int pos;
     int alpha;
@@ -38,10 +37,6 @@ typedef struct ToastQueue {
 ToastQueue toast_queue = {0};
 
 CONVAR(sar_toast, "Draw achievement toast HUD", 1, FCVAR_DONTRECORD);
-
-CON_COMMAND(sar_toast_test, "Test toast hud", FCVAR_NONE) {
-    ToastAdd(L"Test Title", L"Test Description", L"Line 2");
-}
 
 static inline void ToastQueueInit(void) {
     toast_queue.front = -1;
@@ -84,8 +79,7 @@ static inline void ToastQueuePush(Toast value) {
 }
 
 void ToastAdd(const wchar_t title[TOAST_STRING_MAX],
-              const wchar_t desc1[TOAST_STRING_MAX],
-              const wchar_t desc2[TOAST_STRING_MAX]) {
+              const wchar_t desc[TOAST_STRING_MAX]) {
     Toast new_toast = {
         .duration = TOAST_DURATION,
         .pos = 0,
@@ -93,8 +87,7 @@ void ToastAdd(const wchar_t title[TOAST_STRING_MAX],
     };
 
     memcpy(new_toast.title, title, TOAST_STRING_MAX);
-    memcpy(new_toast.desc1, desc1, TOAST_STRING_MAX);
-    memcpy(new_toast.desc2, desc2, TOAST_STRING_MAX);
+    memcpy(new_toast.desc, desc, TOAST_STRING_MAX);
 
     ToastQueuePush(new_toast);
 }
@@ -107,7 +100,7 @@ static inline void ToastDraw(Toast toast) {
         title_font = GetFont("AchievementTitleFont", false);
 
     if (!desc_font)
-        desc_font = GetFont("AchievementTitleFontSmaller", false);
+        desc_font = GetFont("AchievementDescriptionFont", false);
 
     if (!title_font || !desc_font)
         return;
@@ -122,7 +115,7 @@ static inline void ToastDraw(Toast toast) {
     DrawFilledRect(top_x, top_y, top_x + TOAST_WIDTH, top_y + TOAST_HIEGHT);
 
     top_x += TOAST_TEXT_PADDING;
-    top_y += TOAST_TEXT_PADDING;
+    top_y += TOAST_HIEGHT / 4;
 
     DrawSetTextColor((Color){255, 255, 255, toast.alpha});
     DrawSetTextFont(title_font);
@@ -132,11 +125,7 @@ static inline void ToastDraw(Toast toast) {
     int font_tall = GetFontTall(desc_font);
     DrawSetTextFont(desc_font);
     DrawSetTextPos(top_x, top_y + font_tall * 2);
-    DrawPrintText(toast.desc1, wcslen(toast.desc1), FONT_DRAW_DEFAULT);
-
-    DrawSetTextFont(desc_font);
-    DrawSetTextPos(top_x, top_y + font_tall * 3);
-    DrawPrintText(toast.desc2, wcslen(toast.desc2), FONT_DRAW_DEFAULT);
+    DrawPrintText(toast.desc, wcslen(toast.desc), FONT_DRAW_DEFAULT);
 }
 
 void ToastOnPaint(void) {
@@ -190,5 +179,4 @@ void ToastOnPaint(void) {
 void ToastInit(void) {
     ToastQueueInit();
     InitConVar(sar_toast);
-    InitCommand(sar_toast_test);
 }

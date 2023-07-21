@@ -33,6 +33,9 @@ DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, GetCharacterWidth, HFont, int);
 static int vtidx_IPanelGetName = 0;
 DECL_IFUNC_DYN(PRIVATE, const char *, ipanel, IPanelGetName, VPANEL);
 
+// ILocalize
+DECL_IFUNC(PUBLIC, const wchar_t *, ilocalize, ILocalizeFind, 2, const char *);
+
 // ISchemeManager
 DECL_IFUNC(PRIVATE, HScheme, scheme_mgr, GetDefaultScheme, 4);
 DECL_IFUNC(PRIVATE, IScheme *, scheme_mgr, GetIScheme, 8, HScheme);
@@ -102,15 +105,24 @@ bool LoadHudModule(void) {
         return false;
     }
 
-    scheme_mgr = engine_factory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
-    if (!scheme_mgr) {
-        Warning("Failed to get ISchemeManager interface.\n");
-        return false;
-    }
-
     ipanel = engine_factory(VGUI_PANEL_INTERFACE_VERSION, NULL);
     if (!ipanel) {
         Warning("Failed to get IPanel interface.\n");
+        return false;
+    }
+
+    ilocalize = engine_factory(VGUI_LOCALIZE_INTERFACE_VERSION_4, NULL);
+    if (!ilocalize) {
+        ilocalize = engine_factory(VGUI_LOCALIZE_INTERFACE_VERSION_5, NULL);
+    }
+    if (!ilocalize) {
+        Warning("Failed to get ILocalize interface.\n");
+        return false;
+    }
+
+    scheme_mgr = engine_factory(VGUI_SCHEME_INTERFACE_VERSION, NULL);
+    if (!scheme_mgr) {
+        Warning("Failed to get ISchemeManager interface.\n");
         return false;
     }
 

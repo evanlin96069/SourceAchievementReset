@@ -26,6 +26,13 @@ static inline CBaseAchievement* GetBaseAchievement(IAchievement* iach) {
     return (CBaseAchievement*)((uint8_t*)iach - sizeof(CGameEventListener));
 }
 
+static inline const wchar_t* GetAchievementLocalizedName(const char* name) {
+    char name_key[256] = "";
+    snprintf(name_key, sizeof(name_key), "#%s_NAME", name);
+
+    return ILocalizeFind(name_key);
+}
+
 static void virtual Hooked_AwardAchievement(void* this, int id) {
     orig_AwardAchievement(this, id);
     CBaseAchievement* ach =
@@ -41,11 +48,20 @@ static void virtual Hooked_AwardAchievement(void* this, int id) {
                        "%s\n",
                        achievement_name);
 
-    wchar_t title[TOAST_STRING_MAX] = {0};
-    wchar_t desc1[TOAST_STRING_MAX] = L"Achievement Unlocked!";
-    wchar_t desc2[TOAST_STRING_MAX] = L"";
-    swprintf_s(title, TOAST_STRING_MAX, L"%s", achievement_name);
-    ToastAdd(title, desc1, desc2);
+    wchar_t title[TOAST_STRING_MAX] = L"";
+    wchar_t desc[TOAST_STRING_MAX] = L"";
+
+    const wchar_t* awarded_str = ILocalizeFind("#GameUI_Achievement_Awarded");
+    const wchar_t* localized_name =
+        GetAchievementLocalizedName(achievement_name);
+
+    if (!awarded_str || !localized_name)
+        return;
+
+    swprintf_s(title, TOAST_STRING_MAX, L"%s", awarded_str);
+    swprintf_s(desc, TOAST_STRING_MAX, L"%s", localized_name);
+
+    ToastAdd(title, desc);
 }
 
 static void virtual dtor(void* this) {}
@@ -62,12 +78,22 @@ static void virtual FireGameEvent(void* this, IGameEvent* event) {
                            "%s (%d/%d)\n",
                            achievement_name, cur_val, max_val);
 
-        wchar_t title[TOAST_STRING_MAX] = {0};
-        wchar_t desc1[TOAST_STRING_MAX] = L"Achievement Progress!";
-        wchar_t desc2[TOAST_STRING_MAX] = {0};
-        swprintf_s(title, TOAST_STRING_MAX, L"%s", achievement_name);
-        swprintf_s(desc2, TOAST_STRING_MAX, L"(%d/%d)", cur_val, max_val);
-        ToastAdd(title, desc1, desc2);
+        wchar_t title[TOAST_STRING_MAX] = L"";
+        wchar_t desc[TOAST_STRING_MAX] = L"";
+
+        const wchar_t* progress_str =
+            ILocalizeFind("#GameUI_Achievement_Progress");
+        const wchar_t* localized_name =
+            GetAchievementLocalizedName(achievement_name);
+
+        if (!progress_str || !localized_name)
+            return;
+
+        swprintf_s(title, TOAST_STRING_MAX, L"%s", progress_str);
+        swprintf_s(desc, TOAST_STRING_MAX, L"%s (%d/%d)", localized_name,
+                   cur_val, max_val);
+
+        ToastAdd(title, desc);
     }
 }
 

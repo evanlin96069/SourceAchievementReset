@@ -22,5 +22,5 @@ extern IEngineVGui* engine_vgui;
 extern ISchemeManager* scheme_mgr;
 extern IPanel* ipanel;
 extern IScheme* ischeme;
-
+extern ILocalize* ilocalize;
 #endif

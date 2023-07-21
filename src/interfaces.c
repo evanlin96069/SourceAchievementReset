@@ -11,3 +11,4 @@ IEngineVGui* engine_vgui = NULL;
 ISchemeManager* scheme_mgr = NULL;
 IPanel* ipanel = NULL;
 IScheme* ischeme = NULL;
+ILocalize* ilocalize = NULL;
