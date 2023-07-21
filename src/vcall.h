@@ -152,7 +152,7 @@
 
 #endif
 
-#define _DECL_IFUNC_DYN(spec, ret, conv, interface, name, idx, ...)         \
+#define _DECL_IFUNC_DYN(spec, ret, conv, interface, name, ...)              \
     _DECL_VFUNC_TYPE(ret, conv, name, __VA_ARGS__)                          \
     spec _VCALL_UNUSED typeof(ret) name(_VCALL_ARGLIST(__VA_ARGS__)) {      \
         _VCALL_RET(ret)                                                     \
@@ -160,14 +160,14 @@
     }
 #define _DECL_IFUNC(spec, ret, conv, interface, name, idx, ...) \
     static const int vtidx_##name = (idx);                      \
-    _DECL_IFUNC_DYN(spec, ret, conv, interface, name, idx, __VA_ARGS__)
+    _DECL_IFUNC_DYN(spec, ret, conv, interface, name, __VA_ARGS__)
 
 /* Define an interface virtual function with a known index */
 #define DECL_IFUNC(spec, ret, interface, name, idx, ...) \
     _DECL_IFUNC(spec, ret, virtual, interface, name, idx, __VA_ARGS__)
 
 /* Define an interface virtual function with an index defined elsewhere */
-#define DECL_IFUNC_DYN(spec, ret, interface, name, idx, ...) \
-    _DECL_IFUNC_DYN(spec, ret, virtual, interface, name, idx, __VA_ARGS__)
+#define DECL_IFUNC_DYN(spec, ret, interface, name, ...) \
+    _DECL_IFUNC_DYN(spec, ret, virtual, interface, name, __VA_ARGS__)
 
 // vi: sw=4 ts=4 noet tw=80 cc=80

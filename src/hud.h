@@ -6,13 +6,19 @@
 #include "color.h"
 #include "vcall.h"
 
-#define MAT_SYSTEM_SURFACE_INTERFACE_VERSION "MatSystemSurface006"
+#define MAT_SYSTEM_SURFACE_INTERFACE_VERSION_6 "MatSystemSurface006"
+#define MAT_SYSTEM_SURFACE_INTERFACE_VERSION_8 "MatSystemSurface008"
 #define VENGINE_VGUI_VERSION "VEngineVGui001"
 #define VGUI_SCHEME_INTERFACE_VERSION "VGUI_Scheme010"
+#define VGUI_PANEL_INTERFACE_VERSION "VGUI_Panel009"
 
 typedef void* IMatSystemSurface;
 typedef void* ISchemeManager;
+typedef void* IPanel;
+typedef void* IScheme;
 typedef abstract_class IEngineVGui* IEngineVGui;
+
+typedef uint32_t VPANEL;
 
 typedef enum VGuiPanel_t {
     PANEL_ROOT = 0,
@@ -37,7 +43,8 @@ abstract_class IEngineVGui {
     bool (*virtual IsGameUIVisible)(void* this);
 };
 
-typedef uint32_t HFont;
+typedef unsigned long HScheme;
+typedef unsigned long HFont;
 
 // ISurface
 void DrawSetColor(Color col);
@@ -50,9 +57,11 @@ void DrawSetTextColor(Color col);
 void DrawSetTextPos(int x, int y);
 void DrawPrintText(const wchar_t* text, int textLen, FontDrawType_t drawType);
 void GetScreenSize(int* wide, int* tall);
-HFont CreateFont();
 int GetFontTall(HFont font);
 int GetCharacterWidth(HFont font, int ch);
+
+// IScheme
+HFont GetFont(const char* fontName, bool proportional);
 
 bool LoadHudModule(void);
 void UnloadHudModule(void);

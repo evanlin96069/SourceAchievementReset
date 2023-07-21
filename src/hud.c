@@ -1,15 +1,13 @@
 #include "hud.h"
 
+#include <string.h>
+
 #include "achievement.h"
 #include "dbg.h"
 #include "hook.h"
 #include "interfaces.h"
-#include "mem.h"
-#include "x86.h"
 
-static void *tools_panel = NULL;
-DECL_IFUNC(PRIVATE, void, tools_panel, SetPaintEnabled, 67, bool);
-
+// IMatSystemSurface
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetColor, 10, Color);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawFilledRect, 12, int, int, int,
            int);
@@ -23,50 +21,78 @@ DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextColor, 18, Color);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextPos, 20, int, int);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawPrintText, 22, const wchar_t *,
            int, FontDrawType_t);
-DECL_IFUNC(PUBLIC, void, mat_system_surface, GetScreenSize, 37, int *, int *);
-DECL_IFUNC(PUBLIC, HFont, mat_system_surface, CreateFont, 64);
-DECL_IFUNC(PUBLIC, int, mat_system_surface, GetFontTall, 67, HFont);
-DECL_IFUNC(PUBLIC, int, mat_system_surface, GetCharacterWidth, 71, HFont, int);
+static int vtidx_GetScreenSize = 0;
+DECL_IFUNC_DYN(PUBLIC, void, mat_system_surface, GetScreenSize, int *, int *);
+static int vtidx_GetFontTall = 0;
+DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, GetFontTall, HFont);
+static int vtidx_GetCharacterWidth = 0;
+DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, GetCharacterWidth, HFont, int);
+
+// IPanel
+static int vtidx_IPanelGetName = 0;
+DECL_IFUNC_DYN(PRIVATE, const char *, ipanel, IPanelGetName, VPANEL);
+
+// ISchemeManager
+DECL_IFUNC(PRIVATE, HScheme, scheme_mgr, GetDefaultScheme, 4);
+DECL_IFUNC(PRIVATE, IScheme *, scheme_mgr, GetIScheme, 8, HScheme);
+
+// IScheme
+DECL_IFUNC(PUBLIC, HFont, ischeme, GetFont, 3, const char *, bool);
 
 static void OnPaint(void) {}
 
-static const int vtidx_Paint = 123;
-typedef void (*virtual Paint_func)(void *);
-static Paint_func orig_Paint;
-static void virtual Hook_Paint(void *this) {
-    if (this == tools_panel) {
+static int vtidx_PaintTraverse = 0;
+typedef void (*virtual PaintTraverse_func)(void *, VPANEL, bool, bool);
+static PaintTraverse_func orig_PaintTraverse;
+static void virtual Hook_PaintTraverse(void *this, VPANEL vguiPanel,
+                                       bool forceRepaint, bool allowForce) {
+    static VPANEL panel_id = 0;
+    static bool found_panel_id = false;
+
+    orig_PaintTraverse(this, vguiPanel, forceRepaint, allowForce);
+
+    if (!found_panel_id) {
+        if (strcmp(IPanelGetName(vguiPanel), "FocusOverlayPanel") == 0) {
+            panel_id = vguiPanel;
+            found_panel_id = true;
+        }
+    } else if (panel_id == vguiPanel) {
+        // This is not perfect, but if we don't draw at the left side of the
+        // screen it should be unnoticeable.
         OnPaint();
     }
-    orig_Paint(this);
-}
-
-// Not sure what's going on here, but I trust sst:)
-static inline bool FindEngineToolsPanel(void *vgui_getpanel) {
-    for (uint8_t *p = (uint8_t *)vgui_getpanel;
-         p - (uint8_t *)vgui_getpanel < 16;) {
-        // first CALL instruction in GetPanel calls GetRootPanel, which gives a
-        // pointer to the specified panel
-        if (p[0] == X86_CALL) {
-            void *(*__thiscall GetRootPanel)(void *this, int panel_type);
-            int offset = mem_load32(p + 1);
-            p += x86_len(p);
-            GetRootPanel = (void *(*__thiscall)(void *, int))(p + offset);
-            tools_panel = GetRootPanel(engine_vgui, PANEL_TOOLS);
-            return true;
-        }
-        NEXT_INSN(p);
-    }
-    return false;
 }
 
 static bool should_unhook;
 bool LoadHudModule(void) {
     should_unhook = false;
+
     mat_system_surface =
-        engine_factory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION, NULL);
-    if (!mat_system_surface) {
-        Warning("Failed to get IMatSystemSurface interface.\n");
-        return false;
+        engine_factory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION_6, NULL);
+    if (mat_system_surface) {
+        // 3420 & 5135
+        vtidx_IPanelGetName = 35;
+        vtidx_PaintTraverse = 40;
+
+        vtidx_GetScreenSize = 37;
+        vtidx_GetFontTall = 67;
+        vtidx_GetCharacterWidth = 71;
+
+    } else {
+        mat_system_surface =
+            engine_factory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION_8, NULL);
+        if (mat_system_surface) {
+            // Steampipe
+            vtidx_IPanelGetName = 36;
+            vtidx_PaintTraverse = 41;
+
+            vtidx_GetScreenSize = 38;
+            vtidx_GetFontTall = 69;
+            vtidx_GetCharacterWidth = 74;
+        } else {
+            Warning("Failed to get IMatSystemSurface interface.\n");
+            return false;
+        }
     }
 
     engine_vgui = engine_factory(VENGINE_VGUI_VERSION, NULL);
@@ -81,28 +107,33 @@ bool LoadHudModule(void) {
         return false;
     }
 
-    if (!FindEngineToolsPanel((*engine_vgui)->GetPanel)) {
-        Warning("Failed to find engine tools panel.\n");
+    ipanel = engine_factory(VGUI_PANEL_INTERFACE_VERSION, NULL);
+    if (!ipanel) {
+        Warning("Failed to get IPanel interface.\n");
         return false;
     }
 
-    orig_Paint =
-        HookVirtual(&(*(void ***)tools_panel)[vtidx_Paint], &Hook_Paint);
-    if (!orig_Paint) {
+    ischeme = GetIScheme(GetDefaultScheme());
+    if (!ischeme) {
+        Warning("Failed to get IScheme.\n");
+        return false;
+    }
+
+    orig_PaintTraverse = HookVirtual(HOOK_VTABLE(ipanel, vtidx_PaintTraverse),
+                                     &Hook_PaintTraverse);
+    if (!orig_PaintTraverse) {
         Warning("Failed to hook Paint.\n");
         return false;
     }
 
     should_unhook = true;
 
-    SetPaintEnabled(true);
-
     return true;
 }
 
 void UnloadHudModule(void) {
     if (should_unhook) {
-        UnhookVirtual(&(*(void ***)tools_panel)[vtidx_Paint], orig_Paint);
-        SetPaintEnabled(false);
+        UnhookVirtual(HOOK_VTABLE(ipanel, vtidx_PaintTraverse),
+                      orig_PaintTraverse);
     }
 }

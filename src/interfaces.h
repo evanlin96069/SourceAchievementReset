@@ -20,5 +20,7 @@ extern IGameEventManager2* game_event_mgr;
 extern IMatSystemSurface* mat_system_surface;
 extern IEngineVGui* engine_vgui;
 extern ISchemeManager* scheme_mgr;
+extern IPanel* ipanel;
+extern IScheme* ischeme;
 
 #endif

@@ -182,7 +182,7 @@ bool LoadAchievementModule(void) {
 
     // Hook
     orig_AwardAchievement =
-        HookVirtual((void**)&(*achievement_mgr)->AwardAchievement,
+        HookVirtual(HOOK_IFUNC(achievement_mgr, AwardAchievement),
                     &Hooked_AwardAchievement);
     if (!orig_AwardAchievement) {
         Warning("Failed to hook AwardAchievement.\n");
@@ -206,7 +206,7 @@ bool LoadAchievementModule(void) {
 void UnloadAchievementModule(void) {
     // Unhook
     if (should_unhook) {
-        UnhookVirtual((void**)&(*achievement_mgr)->AwardAchievement,
+        UnhookVirtual(HOOK_IFUNC(achievement_mgr, AwardAchievement),
                       orig_AwardAchievement);
     }
     StopListeningForAllEvents(&listener);
