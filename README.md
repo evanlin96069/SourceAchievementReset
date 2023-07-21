@@ -1,6 +1,6 @@
 # SourceAchievementReset
 
-A plugin that resets achievements for Source engine written in C. Useful for practicing all achievements speedrun.
+A plugin that resets achievements for Source engine games. Useful for practicing all achievements speedrun.
 
 Tested on Portal 3420, Portal 5135, Portal Steampipe.
 
@@ -21,4 +21,8 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
 
 `sar_achievement_unlock_all`
   - Unlocks all achievements
+
+## ConVar
+`sar_toast`
+ - Draw achievement toast HUD
 
