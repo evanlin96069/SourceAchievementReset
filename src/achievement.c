@@ -1,5 +1,6 @@
 #include "achievement.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,6 +8,7 @@
 #include "dbg.h"
 #include "hook.h"
 #include "interfaces.h"
+#include "toast.h"
 
 IAchievementMgr* achievement_mgr = NULL;
 
@@ -33,10 +35,17 @@ static void virtual Hooked_AwardAchievement(void* this, int id) {
     IAchievement* iach = &ach->base2;
     if (!(*iach)->IsAchieved(iach))
         return;
+    const char* achievement_name = (*iach)->GetName(iach);
     ConsoleColorPrintf(&green,
                        "Achievement Unlocked!\n"
                        "%s\n",
-                       (*iach)->GetName(iach));
+                       achievement_name);
+
+    wchar_t title[TOAST_STRING_MAX] = {0};
+    wchar_t desc1[TOAST_STRING_MAX] = L"Achievement Unlocked!";
+    wchar_t desc2[TOAST_STRING_MAX] = L"";
+    swprintf_s(title, TOAST_STRING_MAX, L"%s", achievement_name);
+    ToastAdd(title, desc1, desc2);
 }
 
 static void virtual dtor(void* this) {}
@@ -52,6 +61,13 @@ static void virtual FireGameEvent(void* this, IGameEvent* event) {
                            "Achievement Progress!\n"
                            "%s (%d/%d)\n",
                            achievement_name, cur_val, max_val);
+
+        wchar_t title[TOAST_STRING_MAX] = {0};
+        wchar_t desc1[TOAST_STRING_MAX] = L"Achievement Progress!";
+        wchar_t desc2[TOAST_STRING_MAX] = {0};
+        swprintf_s(title, TOAST_STRING_MAX, L"%s", achievement_name);
+        swprintf_s(desc2, TOAST_STRING_MAX, L"(%d/%d)", cur_val, max_val);
+        ToastAdd(title, desc1, desc2);
     }
 }
 

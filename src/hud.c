@@ -6,6 +6,7 @@
 #include "dbg.h"
 #include "hook.h"
 #include "interfaces.h"
+#include "toast.h"
 
 // IMatSystemSurface
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetColor, 10, Color);
@@ -39,7 +40,7 @@ DECL_IFUNC(PRIVATE, IScheme *, scheme_mgr, GetIScheme, 8, HScheme);
 // IScheme
 DECL_IFUNC(PUBLIC, HFont, ischeme, GetFont, 3, const char *, bool);
 
-static void OnPaint(void) {}
+static void OnPaint(void) { ToastOnPaint(); }
 
 static int vtidx_PaintTraverse = 0;
 typedef void (*virtual PaintTraverse_func)(void *, VPANEL, bool, bool);
@@ -127,6 +128,8 @@ bool LoadHudModule(void) {
     }
 
     should_unhook = true;
+
+    ToastInit();
 
     return true;
 }
