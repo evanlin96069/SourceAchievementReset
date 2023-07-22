@@ -64,7 +64,8 @@ static inline void ToastQueuePop() {
     toast_queue.size--;
 }
 
-static inline void ToastQueuePush(Toast value) {
+void ToastAdd(const wchar_t title[TOAST_STRING_MAX],
+              const wchar_t desc[TOAST_STRING_MAX]) {
     if (ToastQueueIsFull()) {
         ToastQueuePop();
     }
@@ -74,22 +75,14 @@ static inline void ToastQueuePush(Toast value) {
     }
 
     toast_queue.back = (toast_queue.back + 1) % TOAST_MAX;
-    toast_queue.data[toast_queue.back] = value;
     toast_queue.size++;
-}
 
-void ToastAdd(const wchar_t title[TOAST_STRING_MAX],
-              const wchar_t desc[TOAST_STRING_MAX]) {
-    Toast new_toast = {
-        .duration = TOAST_DURATION,
-        .pos = 0,
-        .alpha = TOAST_ALPHA,
-    };
-
-    memcpy(new_toast.title, title, TOAST_STRING_MAX);
-    memcpy(new_toast.desc, desc, TOAST_STRING_MAX);
-
-    ToastQueuePush(new_toast);
+    Toast* new_toast = &toast_queue.data[toast_queue.back];
+    new_toast->duration = TOAST_DURATION;
+    new_toast->pos = 0;
+    new_toast->alpha = TOAST_ALPHA;
+    memcpy(new_toast->title, title, TOAST_STRING_MAX);
+    memcpy(new_toast->desc, desc, TOAST_STRING_MAX);
 }
 
 static inline void ToastDraw(Toast toast) {
