@@ -22,6 +22,9 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
 `sar_achievement_unlock_all`
   - Unlocks all achievements
 
+`sar_bonusmap_reset`
+  - Reset the bonus map database
+
 ## ConVar
 `sar_toast`
  - Draw achievement toast HUD

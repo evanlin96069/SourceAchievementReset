@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "color.h"
+#include "utils.h"
 #include "vcall.h"
 
 #define CVAR_INTERFACE_VERSION "VEngineCvar004"

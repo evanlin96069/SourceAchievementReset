@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "achievement.h"
+#include "bonusmap.h"
 #include "convar.h"
 #include "dbg.h"
 #include "interfaces.h"
@@ -46,6 +47,9 @@ static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
     if (!LoadAchievementModule())
         return false;
 
+    if (!LoadBonusMapModule())
+        return false;
+
     const Color green = {110, 247, 75, 255};
     ConsoleColorPrintf(&green, "Loaded %s, Version %s\n", PLUGIN_NAME,
                        PLUGIN_VERSION);
@@ -62,6 +66,8 @@ static void virtual Unload(void *this) {
     UnloadCvarModule();
     UnloadHudModule();
     UnloadAchievementModule();
+    UnloadBonusMapModule();
+
     plugin_loaded = false;
 }
 

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "color.h"
+#include "utils.h"
 #include "vcall.h"
 
 #define MAT_SYSTEM_SURFACE_INTERFACE_VERSION_6 "MatSystemSurface006"

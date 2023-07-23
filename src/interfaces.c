@@ -1,5 +1,9 @@
 #include "interfaces.h"
 
+#include <windows.h>
+
+#define CREATEINTERFACE_PROCNAME "CreateInterface"
+
 CreateInterfaceFn engine_factory = NULL;
 CreateInterfaceFn server_factory = NULL;
 
@@ -12,3 +16,14 @@ ISchemeManager* scheme_mgr = NULL;
 IPanel* ipanel = NULL;
 IScheme* ischeme = NULL;
 ILocalize* ilocalize = NULL;
+
+static inline void* Sys_GetProcAddress(const char* pModuleName,
+                                       const char* pName) {
+    HMODULE hModule = (HMODULE)GetModuleHandle(pModuleName);
+    return (void*)GetProcAddress(hModule, pName);
+}
+
+CreateInterfaceFn Sys_GetFactory(const char* pModuleName) {
+    return (CreateInterfaceFn)(Sys_GetProcAddress(pModuleName,
+                                                  CREATEINTERFACE_PROCNAME));
+}
