@@ -57,12 +57,10 @@ struct BonusMapChallenge_t {
     int iBest;
 };
 
-typedef CUtlVector(BonusMapDescription_t) CUtlVector_BonusMapDescription_t;
-
 struct CBonusMapsDatabaseV1 {
     KeyValues *bonus_maps_manifest;
 
-    CUtlVector_BonusMapDescription_t bonus_maps;
+    CUtlVector(BonusMapDescription_t) bonus_maps;
 
     KeyValues *bonus_map_saved_data;
     bool saved_data_changed;
@@ -83,7 +81,7 @@ struct CBonusMapsDatabase {
     KeyValues *bonus_maps_manifest;
     void *unknown;  // New
 
-    CUtlVector_BonusMapDescription_t bonus_maps;
+    CUtlVector(BonusMapDescription_t) bonus_maps;
 
     KeyValues *bonus_map_saved_data;
     bool saved_data_changed;

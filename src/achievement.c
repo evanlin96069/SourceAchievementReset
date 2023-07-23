@@ -8,12 +8,15 @@
 #include "convar.h"
 #include "dbg.h"
 #include "hook.h"
+#include "hud.h"
 #include "interfaces.h"
 #include "toast.h"
 
 IAchievementMgr* achievement_mgr = NULL;
 
 DECL_IFUNC(PRIVATE, IAchievementMgr*, engine_server, GetAchievementMgr, 100);
+
+DECL_VFUNC(PRIVATE, void, ListenForEvents, 3);
 
 typedef void (*virtual AwardAchievement_func)(void*, int);
 static AwardAchievement_func orig_AwardAchievement = NULL;
@@ -126,15 +129,13 @@ CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
     }
 }
 
+#define ACH_HAS_COMPONENTS 0x0020
 static void ResetAchievement(int index) {
     IAchievement* iach =
         (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
     CBaseAchievement* base = GetBaseAchievement(iach);
 
     const char* name = (*iach)->GetName(iach);
-    int achievement_id = (*iach)->GetAchievementID(iach);
-    int goal = (*iach)->GetGoal(iach);
-    int count = (*iach)->GetCount(iach);
 
 #define ACHIEVEMENT_TRY_RESET(T)                                          \
     do {                                                                  \
@@ -147,11 +148,16 @@ static void ResetAchievement(int index) {
                 ach->component_bits = 0;                                  \
             }                                                             \
             ach->progress_shown = 0;                                      \
+            StopListeningForAllEvents(&ach->base1);                       \
+            ListenForEvents(ach);                                         \
             Msg("%s reset!\n", name);                                     \
             return;                                                       \
         }                                                                 \
     } while (0)
 
+    int achievement_id = (*iach)->GetAchievementID(iach);
+    int goal = (*iach)->GetGoal(iach);
+    int count = (*iach)->GetCount(iach);
     ACHIEVEMENT_TRY_RESET(CBaseAchievementV1);
     ACHIEVEMENT_TRY_RESET(CBaseAchievementV2);
     ACHIEVEMENT_TRY_RESET(CBaseAchievement);
@@ -234,6 +240,84 @@ CON_COMMAND(sar_full_game_reset, "Reset all achievements and bonus map",
     }
 }
 
+CONVAR(sar_hud_infinite_fall,
+       "Draw Portal infinite fall achievement HUD\n"
+       "  1 - ft\n"
+       "  2 - HU",
+       0, FCVAR_NONE);
+
+#define ACHIEVEMENT_PORTAL_INFINITEFALL 119
+void DrawAchievementInfiniteFallHUD(void) {
+    static HFont hud_font = 0;
+
+    int mode = sar_hud_infinite_fall->val;
+    if (!mode)
+        return;
+
+    CBaseAchievement* base =
+        (*achievement_mgr)
+            ->GetAchievementByID(achievement_mgr,
+                                 ACHIEVEMENT_PORTAL_INFINITEFALL);
+    if (!base)
+        return;
+
+    IAchievement* iach = &base->base2;
+
+    float dist = -1;
+    if ((*iach)->IsAchieved(iach)) {
+        dist = 30000 * 12;
+    } else {
+#define ACHIEVEMENT_TRY_GET_DIST(T)                                           \
+    do {                                                                      \
+        if (dist == -1) {                                                     \
+            T* ach = (T*)base;                                                \
+            if (ach->achievement_id == achievement_id && ach->goal == goal && \
+                ach->count == count) {                                        \
+                struct {                                                      \
+                    T base;                                                   \
+                    bool is_flinging;                                         \
+                    float accumulated_dist;                                   \
+                    float z_portal_pos;                                       \
+                }* fall_ach = (void*)ach;                                     \
+                dist = fall_ach->accumulated_dist;                            \
+            }                                                                 \
+        }                                                                     \
+    } while (0)
+
+        int achievement_id = (*iach)->GetAchievementID(iach);
+        int goal = (*iach)->GetGoal(iach);
+        int count = (*iach)->GetCount(iach);
+        ACHIEVEMENT_TRY_GET_DIST(CBaseAchievementV1);
+        ACHIEVEMENT_TRY_GET_DIST(CBaseAchievementV2);
+        ACHIEVEMENT_TRY_GET_DIST(CBaseAchievement);
+    }
+
+    if (dist == -1)
+        return;
+
+    if (!hud_font)
+        hud_font = GetFont("Trebuchet24", false);
+
+    if (!hud_font)
+        return;
+
+    DrawSetTextFont(hud_font);
+    DrawSetTextColor((Color){255, 255, 255, 255});
+    wchar_t buf[32];
+    int len = 0;
+    if (mode == 1) {
+        len = swprintf_s(buf, sizeof(buf), L"Infinite fall: %d ft",
+                         (int)(dist / 12));
+    } else {
+        len = swprintf_s(buf, sizeof(buf), L"Infinite fall: %.2f HU", dist);
+    }
+
+    int tw, th;
+    GetTextSize(hud_font, buf, &tw, &th);
+    DrawSetTextPos((screen_width - tw) / 2, screen_height * 0.1);
+    DrawPrintText(buf, len, FONT_DRAW_DEFAULT);
+}
+
 static bool should_unhook;
 bool LoadAchievementModule(void) {
     should_unhook = false;
@@ -263,6 +347,7 @@ bool LoadAchievementModule(void) {
     InitCommand(sar_achievement_unlock);
     InitCommand(sar_achievement_unlock_all);
     InitCommand(sar_full_game_reset);
+    InitConVar(sar_hud_infinite_fall);
 
     return true;
 }

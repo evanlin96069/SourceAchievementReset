@@ -76,7 +76,7 @@ static void virtual Pause(void *this) {}
 static void virtual UnPause(void *this) {}
 
 static const char *virtual GetPluginDescription(void *this) {
-    return PLUGIN_NAME " " PLUGIN_VERSION;
+    return PLUGIN_NAME " v" PLUGIN_VERSION;
 }
 
 static void virtual LevelInit(void *this, const char *map_name) {}

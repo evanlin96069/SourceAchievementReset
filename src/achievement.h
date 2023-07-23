@@ -6,18 +6,9 @@
 #include "gameevents.h"
 #include "vcall.h"
 
-#define ACH_LISTEN_KILL_EVENTS 0x0001
-#define ACH_LISTEN_MAP_EVENTS 0x0002
-#define ACH_LISTEN_COMPONENT_EVENTS 0x0004
-#define ACH_HAS_COMPONENTS 0x0020
-#define ACH_SAVE_WITH_GAME 0x0040
-#define ACH_SAVE_GLOBAL 0x0080
-#define ACH_FILTER_ATTACKER_IS_PLAYER 0x0100
-#define ACH_FILTER_VICTIM_IS_PLAYER_ENEMY 0x0200
-#define ACH_FILTER_FULL_ROUND_ONLY 0x0400
-
 typedef abstract_class IAchievement* IAchievement;
 typedef abstract_class IAchievementMgr* IAchievementMgr;
+
 typedef struct CBaseAchievementV1 CBaseAchievementV1;
 typedef struct CBaseAchievementV2 CBaseAchievementV2;
 typedef struct CBaseAchievement CBaseAchievement;
@@ -34,8 +25,6 @@ abstract_class IAchievement {
     int (*virtual GetPointValue)(void* this);
     bool (*virtual ShouldSaveWithGame)(void* this);
     bool (*virtual ShouldHideUntilAchieved)(void* this);
-    bool (*virtual ShouldShowOnHUD)(void* this);
-    void (*virtual SetShowOnHUD)(void* this, bool bShow);
 };
 
 abstract_class IAchievementMgr {
@@ -48,8 +37,6 @@ abstract_class IAchievementMgr {
     void (*virtual DownloadUserData)(void* this);
     void (*virtual EnsureGlobalStateLoaded)(void* this);
     void (*virtual SaveGlobalStateIfDirty)(void* this, bool bAsync);
-    bool (*virtual HasAchieved)(void* this, const char* pchName);
-    bool (*virtual WereCheatsEverOn)(void* this);
 };
 
 // 3420
@@ -146,8 +133,10 @@ struct CBaseAchievement {
     int progress_shown;
     uint64_t component_bits;
     void* achievement_mgr;
+    bool show_on_HUD;  // New
 };
 
+void DrawAchievementInfiniteFallHUD(void);
 bool LoadAchievementModule(void);
 void UnloadAchievementModule(void);
 

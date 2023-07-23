@@ -49,6 +49,9 @@ abstract_class IEngineVGui {
 typedef unsigned long HScheme;
 typedef unsigned long HFont;
 
+extern int screen_width;
+extern int screen_height;
+
 // ISurface
 void DrawSetColor(Color col);
 void DrawFilledRect(int x0, int y0, int x1, int y1);
@@ -61,7 +64,7 @@ void DrawSetTextPos(int x, int y);
 void DrawPrintText(const wchar_t* text, int textLen, FontDrawType_t drawType);
 void GetScreenSize(int* wide, int* tall);
 int GetFontTall(HFont font);
-int GetCharacterWidth(HFont font, int ch);
+void GetTextSize(HFont font, const wchar_t* text, int* wide, int* tall);
 
 // ILocalize
 const wchar_t* ILocalizeFind(char const* tokenName);

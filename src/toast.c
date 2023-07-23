@@ -98,9 +98,6 @@ static inline void ToastDraw(Toast toast) {
     if (!title_font || !desc_font)
         return;
 
-    int screen_width, screen_height;
-    GetScreenSize(&screen_width, &screen_height);
-
     int top_x = screen_width - TOAST_WIDTH;
     int top_y = screen_height - toast.pos;
 

@@ -26,8 +26,9 @@ static int vtidx_GetScreenSize = 0;
 DECL_IFUNC_DYN(PUBLIC, void, mat_system_surface, GetScreenSize, int *, int *);
 static int vtidx_GetFontTall = 0;
 DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, GetFontTall, HFont);
-static int vtidx_GetCharacterWidth = 0;
-DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, GetCharacterWidth, HFont, int);
+static int vtidx_GetTextSize = 0;
+DECL_IFUNC_DYN(PUBLIC, void, mat_system_surface, GetTextSize, HFont,
+               const wchar_t *, int *, int *);
 
 // IPanel
 static int vtidx_IPanelGetName = 0;
@@ -43,7 +44,15 @@ DECL_IFUNC(PRIVATE, IScheme *, scheme_mgr, GetIScheme, 8, HScheme);
 // IScheme
 DECL_IFUNC(PUBLIC, HFont, ischeme, GetFont, 3, const char *, bool);
 
-static void OnPaint(void) { ToastOnPaint(); }
+int screen_width = 0;
+int screen_height = 0;
+
+static void OnPaint(void) {
+    GetScreenSize(&screen_width, &screen_height);
+
+    ToastOnPaint();
+    DrawAchievementInfiniteFallHUD();
+}
 
 static int vtidx_PaintTraverse = 0;
 typedef void (*virtual PaintTraverse_func)(void *, VPANEL, bool, bool);
@@ -80,7 +89,7 @@ bool LoadHudModule(void) {
 
         vtidx_GetScreenSize = 37;
         vtidx_GetFontTall = 67;
-        vtidx_GetCharacterWidth = 71;
+        vtidx_GetTextSize = 72;
 
     } else {
         mat_system_surface =
@@ -92,7 +101,7 @@ bool LoadHudModule(void) {
 
             vtidx_GetScreenSize = 38;
             vtidx_GetFontTall = 69;
-            vtidx_GetCharacterWidth = 74;
+            vtidx_GetTextSize = 75;
         } else {
             Warning("Failed to get IMatSystemSurface interface.\n");
             return false;

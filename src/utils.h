@@ -10,14 +10,14 @@
  */
 
 #define CUtlMemory(T)         \
-    struct CUtlMemory_##T {   \
+    struct {                  \
         T* memory;            \
         int allocation_count; \
         int grow_size;        \
     }
 
 #define CUtlVector(T)         \
-    struct CUtlVector_##T {   \
+    struct {                  \
         CUtlMemory(T) memory; \
         int size;             \
         T* element;           \
