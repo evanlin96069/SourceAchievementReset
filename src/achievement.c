@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bonusmap.h"
 #include "convar.h"
 #include "dbg.h"
 #include "hook.h"
@@ -158,6 +159,13 @@ static void ResetAchievement(int index) {
     Msg("Failed to reset achievement.\n");
 }
 
+static void ResetAllAchievments(void) {
+    int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
+    for (int i = 0; i < count; i++) {
+        ResetAchievement(i);
+    }
+}
+
 CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
     if (args->argc != 2) {
         Msg("Usage: %s <index>\n", args->argv[0]);
@@ -175,10 +183,7 @@ CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
 }
 
 CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
-    int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
-    for (int i = 0; i < count; i++) {
-        ResetAchievement(i);
-    }
+    ResetAllAchievments();
 }
 
 static void UnlockAchievement(int index) {
@@ -213,6 +218,22 @@ CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
     }
 }
 
+CON_COMMAND(sar_full_game_reset, "Reset all achievements and bonus map",
+            FCVAR_NONE) {
+    ResetAllAchievments();
+    BonusMapReset();
+    ConVar* sv_unlockedchapters = FindVar("sv_unlockedchapters");
+    if (sv_unlockedchapters) {
+        const char* default_val = sv_unlockedchapters->parent->default_val;
+        SetValue(sv_unlockedchapters, default_val);
+    }
+
+    ConVar* sv_cheats = FindVar("sv_cheats");
+    if (sv_cheats) {
+        SetIntValue(sv_cheats, 0);
+    }
+}
+
 static bool should_unhook;
 bool LoadAchievementModule(void) {
     should_unhook = false;
@@ -241,6 +262,7 @@ bool LoadAchievementModule(void) {
     InitCommand(sar_achievement_reset_all);
     InitCommand(sar_achievement_unlock);
     InitCommand(sar_achievement_unlock_all);
+    InitCommand(sar_full_game_reset);
 
     return true;
 }

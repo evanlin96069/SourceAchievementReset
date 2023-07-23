@@ -79,6 +79,7 @@ struct CBonusMapsDatabase {
 typedef CBonusMapsDatabase *(*BonusMapsDatabase_func)(void);
 extern BonusMapsDatabase_func BonusMapsDatabase;
 
+void BonusMapReset(void);
 bool LoadBonusMapModule(void);
 void UnloadBonusMapModule(void);
 

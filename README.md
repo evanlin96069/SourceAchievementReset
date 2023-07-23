@@ -25,6 +25,9 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
 `sar_bonusmap_reset`
   - Reset the bonus map database
 
+`sar_full_game_reset`
+  - Reset all achievements and bonus map
+
 ## ConVar
 `sar_toast`
  - Draw achievement toast HUD

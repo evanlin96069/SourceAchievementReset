@@ -9,19 +9,27 @@ static IGameUI* igameui = NULL;
 BonusMapsDatabase_func BonusMapsDatabase = NULL;
 
 CON_COMMAND(sar_bonusmap_reset, "Reset the bonus map database", FCVAR_NONE) {
+    BonusMapReset();
+}
+
+void BonusMapReset(void) {
     CBonusMapsDatabase* db = BonusMapsDatabase();
 
     KeyValues* files = KvFindKey(db->bonus_map_saved_data, "bonusfiles");
-    if (!files)
+    if (!files) {
+        Msg("BonusMapDatabase not loaded!\n");
         return;
+    }
 
     KvFree(files->sub);
     files->sub = NULL;
     KvFree(files->next);
     files->next = NULL;
+
+    Msg("BonusMapDatabase reset!\n");
 }
 
-static BonusMapsDatabase_func FindBonusMapsDatabase() {
+static BonusMapsDatabase_func FindBonusMapsDatabase(void) {
     const int vtidx_BonusMapDatabaseSave = 27;
     uint8_t* base = (*(uint8_t***)(igameui))[vtidx_BonusMapDatabaseSave];
     uint8_t inst = *base;
