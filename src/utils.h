@@ -10,7 +10,7 @@
  */
 
 #define CUtlMemory(T)         \
-    struct CAllocator_##T {   \
+    struct CUtlMemory_##T {   \
         T* memory;            \
         int allocation_count; \
         int grow_size;        \

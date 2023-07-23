@@ -15,6 +15,7 @@ typedef struct CUtlVector CUtlVector;
 typedef struct ChallengeDescription_t ChallengeDescription_t;
 typedef struct BonusMapDescription_t BonusMapDescription_t;
 typedef struct BonusMapChallenge_t BonusMapChallenge_t;
+typedef struct CBonusMapsDatabaseV1 CBonusMapsDatabaseV1;
 typedef struct CBonusMapsDatabase CBonusMapsDatabase;
 
 struct ChallengeDescription_t {
@@ -56,10 +57,33 @@ struct BonusMapChallenge_t {
     int iBest;
 };
 
-struct CBonusMapsDatabase {
+typedef CUtlVector(BonusMapDescription_t) CUtlVector_BonusMapDescription_t;
+
+struct CBonusMapsDatabaseV1 {
     KeyValues *bonus_maps_manifest;
 
-    CUtlVector(BonusMapDescription_t) bonus_maps;
+    CUtlVector_BonusMapDescription_t bonus_maps;
+
+    KeyValues *bonus_map_saved_data;
+    bool saved_data_changed;
+
+    int x360_bonuses_unlocked;  // Only used on 360
+    bool has_loaded_save_data;
+
+    int dir_depth;
+    char current_path[260];
+    float current_completion;
+    int completable_levels;
+
+    BonusMapChallenge_t current_challenge_names;
+    ChallengeDescription_t current_challenge_objectives;
+};
+
+struct CBonusMapsDatabase {
+    KeyValues *bonus_maps_manifest;
+    void *unknown;  // New
+
+    CUtlVector_BonusMapDescription_t bonus_maps;
 
     KeyValues *bonus_map_saved_data;
     bool saved_data_changed;

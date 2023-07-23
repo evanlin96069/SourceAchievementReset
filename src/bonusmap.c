@@ -13,9 +13,16 @@ CON_COMMAND(sar_bonusmap_reset, "Reset the bonus map database", FCVAR_NONE) {
 }
 
 void BonusMapReset(void) {
-    CBonusMapsDatabase* db = BonusMapsDatabase();
+    KeyValues* saved_data;
+    if (FindCommand("vr_activate")) {
+        // new steampipe
+        saved_data = BonusMapsDatabase()->bonus_map_saved_data;
+    } else {
+        saved_data =
+            ((CBonusMapsDatabaseV1*)BonusMapsDatabase())->bonus_map_saved_data;
+    }
 
-    KeyValues* files = KvFindKey(db->bonus_map_saved_data, "bonusfiles");
+    KeyValues* files = KvFindKey(saved_data, "bonusfiles");
     if (!files) {
         Msg("BonusMapDatabase not loaded!\n");
         return;
