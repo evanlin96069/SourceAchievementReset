@@ -37,6 +37,13 @@ static inline const wchar_t* GetAchievementLocalizedName(const char* name) {
     return ILocalizeFind(name_key);
 }
 
+static inline const wchar_t* GetAchievementLocalizedDesc(const char* name) {
+    char name_key[256] = "";
+    snprintf(name_key, sizeof(name_key), "#%s_DESC", name);
+
+    return ILocalizeFind(name_key);
+}
+
 static void virtual Hooked_AwardAchievement(void* this, int id) {
     orig_AwardAchievement(this, id);
     CBaseAchievement* ach =
@@ -55,17 +62,23 @@ static void virtual Hooked_AwardAchievement(void* this, int id) {
     wchar_t title[TOAST_STRING_MAX] = L"";
     wchar_t desc[TOAST_STRING_MAX] = L"";
 
-    const wchar_t* awarded_str = ILocalizeFind("#GameUI_Achievement_Awarded");
     const wchar_t* localized_name =
         GetAchievementLocalizedName(achievement_name);
+    const wchar_t* localized_desc =
+        GetAchievementLocalizedDesc(achievement_name);
 
-    if (!awarded_str || !localized_name)
+    if (!localized_name || !localized_desc)
         return;
 
-    swprintf_s(title, TOAST_STRING_MAX, L"%s", awarded_str);
-    swprintf_s(desc, TOAST_STRING_MAX, L"%s", localized_name);
+    int len = wcslen(localized_name);
+    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+    memcpy(title, localized_name, len * sizeof(wchar_t));
 
-    ToastAdd(title, desc);
+    len = wcslen(localized_desc);
+    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+    memcpy(desc, localized_desc, len * sizeof(wchar_t));
+
+    ToastAdd(achievement_name, title, desc);
 }
 
 static void virtual dtor(void* this) {}
@@ -85,19 +98,19 @@ static void virtual FireGameEvent(void* this, IGameEvent* event) {
         wchar_t title[TOAST_STRING_MAX] = L"";
         wchar_t desc[TOAST_STRING_MAX] = L"";
 
-        const wchar_t* progress_str =
-            ILocalizeFind("#GameUI_Achievement_Progress");
         const wchar_t* localized_name =
             GetAchievementLocalizedName(achievement_name);
 
-        if (!progress_str || !localized_name)
+        if (!localized_name)
             return;
 
-        swprintf_s(title, TOAST_STRING_MAX, L"%s", progress_str);
-        swprintf_s(desc, TOAST_STRING_MAX, L"%s (%d/%d)", localized_name,
-                   cur_val, max_val);
+        int len = wcslen(localized_name);
+        len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+        memcpy(title, localized_name, len * sizeof(wchar_t));
 
-        ToastAdd(title, desc);
+        swprintf(desc, TOAST_STRING_MAX, L"# (%d/%d)", cur_val, max_val);
+
+        ToastAdd(achievement_name, title, desc);
     }
 }
 
@@ -224,7 +237,7 @@ CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
     }
 }
 
-CON_COMMAND(sar_full_game_reset, "Reset all achievements and bonus map",
+CON_COMMAND(sar_full_game_reset, "Resets all achievements and bonus map",
             FCVAR_NONE) {
     ResetAllAchievments();
     BonusMapReset();
@@ -241,7 +254,7 @@ CON_COMMAND(sar_full_game_reset, "Reset all achievements and bonus map",
 }
 
 CONVAR(sar_hud_infinite_fall,
-       "Draw Portal infinite fall achievement HUD\n"
+       "Draws Portal infinite fall achievement HUD\n"
        "  1 - ft\n"
        "  2 - HU",
        0, FCVAR_NONE);

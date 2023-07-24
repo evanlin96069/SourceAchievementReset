@@ -58,10 +58,20 @@ void DrawFilledRect(int x0, int y0, int x1, int y1);
 void DrawOutlinedRect(int x0, int y0, int x1, int y1);
 void DrawLine(int x0, int y0, int x1, int y1);
 void DrawPolyLine(int* px, int* py, int numPoints);
+
 void DrawSetTextFont(HFont font);
 void DrawSetTextColor(Color col);
 void DrawSetTextPos(int x, int y);
 void DrawPrintText(const wchar_t* text, int textLen, FontDrawType_t drawType);
+
+int DrawGetTextureId(const char* filename);
+void DrawSetTextureFile(int id, const char* filename, int hardwareFilter,
+                        bool forceReload);
+void DrawSetTexture(int id);
+void DrawGetTextureSize(int id, int* wide, int* tall);
+void DrawTexturedRect(int x0, int y0, int x1, int y1);
+int CreateNewTextureID(bool procedural);
+
 void GetScreenSize(int* wide, int* tall);
 int GetFontTall(HFont font);
 void GetTextSize(HFont font, const wchar_t* text, int* wide, int* tall);

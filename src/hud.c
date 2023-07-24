@@ -17,11 +17,24 @@ DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawOutlinedRect, 14, int, int,
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawLine, 15, int, int, int, int);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawPolyLine, 16, int *, int *,
            int);
+
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextFont, 17, HFont);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextColor, 18, Color);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextPos, 20, int, int);
 DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawPrintText, 22, const wchar_t *,
            int, FontDrawType_t);
+
+DECL_IFUNC(PUBLIC, int, mat_system_surface, DrawGetTextureId, 28, const char *);
+DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTextureFile, 30, int,
+           const char *, int, bool);
+DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawSetTexture, 32, int);
+DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawGetTextureSize, 33, int, int *,
+           int *);
+DECL_IFUNC(PUBLIC, void, mat_system_surface, DrawTexturedRect, 34, int, int,
+           int, int);
+static int vtidx_CreateNewTextureID = 0;
+DECL_IFUNC_DYN(PUBLIC, int, mat_system_surface, CreateNewTextureID, bool);
+
 static int vtidx_GetScreenSize = 0;
 DECL_IFUNC_DYN(PUBLIC, void, mat_system_surface, GetScreenSize, int *, int *);
 static int vtidx_GetFontTall = 0;
@@ -87,6 +100,7 @@ bool LoadHudModule(void) {
         vtidx_IPanelGetName = 35;
         vtidx_PaintTraverse = 40;
 
+        vtidx_CreateNewTextureID = 36;
         vtidx_GetScreenSize = 37;
         vtidx_GetFontTall = 67;
         vtidx_GetTextSize = 72;
@@ -99,6 +113,7 @@ bool LoadHudModule(void) {
             vtidx_IPanelGetName = 36;
             vtidx_PaintTraverse = 41;
 
+            vtidx_CreateNewTextureID = 37;
             vtidx_GetScreenSize = 38;
             vtidx_GetFontTall = 69;
             vtidx_GetTextSize = 75;
