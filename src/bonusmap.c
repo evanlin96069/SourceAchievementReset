@@ -8,7 +8,7 @@
 static IGameUI* igameui = NULL;
 BonusMapsDatabase_func BonusMapsDatabase = NULL;
 
-CON_COMMAND(sar_bonusmap_reset, "Reset the bonus map database", FCVAR_NONE) {
+CON_COMMAND(sar_bonusmap_reset, "Resets the bonus map database", FCVAR_NONE) {
     BonusMapReset();
 }
 

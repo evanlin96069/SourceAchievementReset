@@ -23,14 +23,14 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
   - Unlocks all achievements
 
 `sar_bonusmap_reset`
-  - Reset the bonus map database
+  - Resets the bonus map database
 
 `sar_full_game_reset`
-  - Reset all achievements and bonus map
+  - Resets all achievements and bonus map
 
 ## ConVar
 `sar_toast`
- - Draw achievement toast HUD
+ - Draws achievement toast HUD
  
 `sar_hud_infinite_fall`
- - Draw Portal infinite fall achievement HUD
+ - Draws Portal infinite fall achievement HUD
