@@ -17,6 +17,7 @@
 #define TOAST_PADDING 4
 #define TOAST_IMAGE_PADDING 14
 #define TOAST_TEXT_PADDING 2
+#define TOAST_PROGRESS_HEIGHT 8
 
 #define TOAST_SPEED 1200
 #define TOAST_DURATION 10000
@@ -26,9 +27,13 @@ typedef struct Toast {
     wchar_t title[TOAST_STRING_MAX];
     wchar_t desc[TOAST_STRING_MAX];
     int icon_id;
-    clock_t duration;
+    bool is_progress;
+    int count;
+    int goal;
+
     int x;
     int y;
+    clock_t duration;
 } Toast;
 
 typedef struct ToastQueue {
@@ -54,7 +59,7 @@ static inline bool ToastQueueIsFull(void) {
     return toast_queue.size == TOAST_MAX;
 }
 
-static inline void ToastQueuePop() {
+static inline void ToastQueuePop(void) {
     if (ToastQueueIsEmpty())
         return;
 
@@ -68,9 +73,8 @@ static inline void ToastQueuePop() {
     toast_queue.size--;
 }
 
-void ToastAdd(const char* achievement_name,
-              const wchar_t title[TOAST_STRING_MAX],
-              const wchar_t desc[TOAST_STRING_MAX]) {
+// Returns a pointer to the next position
+static inline Toast* ToastQueuePush(void) {
     if (ToastQueueIsFull()) {
         ToastQueuePop();
     }
@@ -82,8 +86,24 @@ void ToastAdd(const char* achievement_name,
     toast_queue.back = (toast_queue.back + 1) % TOAST_MAX;
     toast_queue.size++;
 
-    Toast* new_toast = &toast_queue.data[toast_queue.back];
+    return &toast_queue.data[toast_queue.back];
+}
 
+static inline const wchar_t* GetAchievementLocalizedName(const char* name) {
+    char name_key[256] = "";
+    snprintf(name_key, sizeof(name_key), "#%s_NAME", name);
+
+    return ILocalizeFind(name_key);
+}
+
+static inline const wchar_t* GetAchievementLocalizedDesc(const char* name) {
+    char name_key[256] = "";
+    snprintf(name_key, sizeof(name_key), "#%s_DESC", name);
+
+    return ILocalizeFind(name_key);
+}
+
+static inline int GetAchievementIconId(const char* achievement_name) {
     char filename[260] = "";
     snprintf(filename, sizeof(filename), "VGUI/achievements/%s",
              achievement_name);
@@ -92,16 +112,66 @@ void ToastAdd(const char* achievement_name,
         id = CreateNewTextureID(false);
     }
     DrawSetTextureFile(id, filename, true, false);
-    new_toast->icon_id = id;
+    return id;
+}
 
+void ToastAddAchieved(const char* achievement_name) {
+    Toast* new_toast = ToastQueuePush();
+
+    new_toast->is_progress = false;
     new_toast->duration = TOAST_DURATION;
     new_toast->x = TOAST_WIDTH;
     new_toast->y = 0;
-    memcpy(new_toast->title, title, TOAST_STRING_MAX * sizeof(wchar_t));
-    memcpy(new_toast->desc, desc, TOAST_STRING_MAX * sizeof(wchar_t));
+    new_toast->icon_id = GetAchievementIconId(achievement_name);
+
+    const wchar_t* localized_name =
+        GetAchievementLocalizedName(achievement_name);
+    const wchar_t* localized_desc =
+        GetAchievementLocalizedDesc(achievement_name);
+
+    if (!localized_name || !localized_desc)
+        return;
+
+    memset(new_toast->title, 0, sizeof(new_toast->title));
+    memset(new_toast->desc, 0, sizeof(new_toast->desc));
+
+    int len = wcslen(localized_name);
+    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+    memcpy(new_toast->title, localized_name, len * sizeof(wchar_t));
+
+    len = wcslen(localized_desc);
+    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+    memcpy(new_toast->desc, localized_desc, len * sizeof(wchar_t));
 }
 
-static inline void ToastDraw(Toast toast) {
+void ToastAddProgress(const char* achievement_name, int count, int goal) {
+    Toast* new_toast = ToastQueuePush();
+
+    new_toast->is_progress = true;
+    new_toast->duration = TOAST_DURATION;
+    new_toast->x = TOAST_WIDTH;
+    new_toast->y = 0;
+    new_toast->icon_id = GetAchievementIconId(achievement_name);
+    new_toast->count = count;
+    new_toast->goal = goal;
+
+    const wchar_t* localized_name =
+        GetAchievementLocalizedName(achievement_name);
+
+    if (!localized_name)
+        return;
+
+    memset(new_toast->title, 0, sizeof(new_toast->title));
+    memset(new_toast->desc, 0, sizeof(new_toast->desc));
+
+    int len = wcslen(localized_name);
+    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
+    memcpy(new_toast->title, localized_name, len * sizeof(wchar_t));
+
+    swprintf(new_toast->desc, TOAST_STRING_MAX, L" #   (%d/%d)", count, goal);
+}
+
+static inline void ToastDraw(const Toast* toast) {
     static HFont toast_font = 0;
     static int font_tall = 0;
 
@@ -112,8 +182,8 @@ static inline void ToastDraw(Toast toast) {
         font_tall = GetFontTall(toast_font);
     }
 
-    int top_x = screen_width - toast.x;
-    int top_y = screen_height - toast.y;
+    int top_x = screen_width - toast->x;
+    int top_y = screen_height - toast->y;
 
     DrawSetColor((Color){23, 26, 33, 255});
     DrawFilledRect(top_x, top_y, top_x + TOAST_WIDTH, top_y + TOAST_HIEGHT);
@@ -121,21 +191,42 @@ static inline void ToastDraw(Toast toast) {
     top_x += TOAST_IMAGE_PADDING;
     top_y += TOAST_IMAGE_PADDING;
     int icon_size = TOAST_HIEGHT - TOAST_IMAGE_PADDING * 2;
-    DrawSetTexture(toast.icon_id);
+    DrawSetTexture(toast->icon_id);
     DrawSetColor((Color){255, 255, 255, 255});
     DrawTexturedRect(top_x, top_y, top_x + icon_size, top_y + icon_size);
     top_x += icon_size + TOAST_IMAGE_PADDING;
     // Center the text
-    top_y += (icon_size - (font_tall * 2 + TOAST_TEXT_PADDING)) / 2;
+    if (toast->is_progress) {
+        top_y += (icon_size - (font_tall * 2 + TOAST_TEXT_PADDING * 3 +
+                               TOAST_PROGRESS_HEIGHT)) /
+                 2;
+    } else {
+        top_y += (icon_size - (font_tall * 2 + TOAST_TEXT_PADDING)) / 2;
+    }
 
     DrawSetTextFont(toast_font);
     DrawSetTextColor((Color){255, 255, 255, 255});
     DrawSetTextPos(top_x, top_y);
-    DrawPrintText(toast.title, wcslen(toast.title), FONT_DRAW_DEFAULT);
+    DrawPrintText(toast->title, wcslen(toast->title), FONT_DRAW_DEFAULT);
 
+    top_y += font_tall + TOAST_TEXT_PADDING;
     DrawSetTextColor((Color){115, 115, 115, 255});
-    DrawSetTextPos(top_x, top_y + font_tall + TOAST_TEXT_PADDING);
-    DrawPrintText(toast.desc, wcslen(toast.desc), FONT_DRAW_DEFAULT);
+    DrawSetTextPos(top_x, top_y);
+    DrawPrintText(toast->desc, wcslen(toast->desc), FONT_DRAW_DEFAULT);
+
+    top_y += font_tall + TOAST_TEXT_PADDING * 2;
+
+    // Draw progress bar
+    if (toast->is_progress) {
+        int progress_width = TOAST_WIDTH - TOAST_IMAGE_PADDING * 3 - icon_size;
+        DrawSetColor((Color){61, 68, 80, 255});
+        DrawFilledRect(top_x, top_y, top_x + progress_width,
+                       top_y + TOAST_PROGRESS_HEIGHT);
+        DrawSetColor((Color){26, 159, 255, 255});
+        progress_width *= ((float)toast->count / toast->goal);
+        DrawFilledRect(top_x, top_y, top_x + progress_width,
+                       top_y + TOAST_PROGRESS_HEIGHT);
+    }
 }
 
 void ToastOnPaint(void) {
@@ -176,7 +267,7 @@ void ToastOnPaint(void) {
                     toast_queue.data[i].duration;
             }
 
-            ToastDraw(toast_queue.data[i]);
+            ToastDraw(&toast_queue.data[i]);
         }
 
         count++;

@@ -30,20 +30,6 @@ static inline CBaseAchievement* GetBaseAchievement(IAchievement* iach) {
     return (CBaseAchievement*)((uint8_t*)iach - sizeof(CGameEventListener));
 }
 
-static inline const wchar_t* GetAchievementLocalizedName(const char* name) {
-    char name_key[256] = "";
-    snprintf(name_key, sizeof(name_key), "#%s_NAME", name);
-
-    return ILocalizeFind(name_key);
-}
-
-static inline const wchar_t* GetAchievementLocalizedDesc(const char* name) {
-    char name_key[256] = "";
-    snprintf(name_key, sizeof(name_key), "#%s_DESC", name);
-
-    return ILocalizeFind(name_key);
-}
-
 static void virtual Hooked_AwardAchievement(void* this, int id) {
     orig_AwardAchievement(this, id);
     CBaseAchievement* ach =
@@ -59,26 +45,7 @@ static void virtual Hooked_AwardAchievement(void* this, int id) {
                        "%s\n",
                        achievement_name);
 
-    wchar_t title[TOAST_STRING_MAX] = L"";
-    wchar_t desc[TOAST_STRING_MAX] = L"";
-
-    const wchar_t* localized_name =
-        GetAchievementLocalizedName(achievement_name);
-    const wchar_t* localized_desc =
-        GetAchievementLocalizedDesc(achievement_name);
-
-    if (!localized_name || !localized_desc)
-        return;
-
-    int len = wcslen(localized_name);
-    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
-    memcpy(title, localized_name, len * sizeof(wchar_t));
-
-    len = wcslen(localized_desc);
-    len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
-    memcpy(desc, localized_desc, len * sizeof(wchar_t));
-
-    ToastAdd(achievement_name, title, desc);
+    ToastAddAchieved(achievement_name);
 }
 
 static void virtual dtor(void* this) {}
@@ -95,22 +62,7 @@ static void virtual FireGameEvent(void* this, IGameEvent* event) {
                            "%s (%d/%d)\n",
                            achievement_name, cur_val, max_val);
 
-        wchar_t title[TOAST_STRING_MAX] = L"";
-        wchar_t desc[TOAST_STRING_MAX] = L"";
-
-        const wchar_t* localized_name =
-            GetAchievementLocalizedName(achievement_name);
-
-        if (!localized_name)
-            return;
-
-        int len = wcslen(localized_name);
-        len = len < TOAST_STRING_MAX ? len : TOAST_STRING_MAX - 1;
-        memcpy(title, localized_name, len * sizeof(wchar_t));
-
-        swprintf(desc, TOAST_STRING_MAX, L"# (%d/%d)", cur_val, max_val);
-
-        ToastAdd(achievement_name, title, desc);
+        ToastAddProgress(achievement_name, cur_val, max_val);
     }
 }
 

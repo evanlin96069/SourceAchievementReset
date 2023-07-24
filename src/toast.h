@@ -6,9 +6,8 @@
 #define TOAST_STRING_MAX 64
 
 void ToastInit(void);
-void ToastAdd(const char* achievement_name,
-              const wchar_t title[TOAST_STRING_MAX],
-              const wchar_t desc[TOAST_STRING_MAX]);
+void ToastAddAchieved(const char* achievement_name);
+void ToastAddProgress(const char* achievement_name, int count, int goal);
 void ToastOnPaint(void);
 
 #endif
