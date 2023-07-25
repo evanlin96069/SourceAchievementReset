@@ -19,8 +19,8 @@
 #define TOAST_TEXT_PADDING 2
 #define TOAST_PROGRESS_HEIGHT 8
 
-#define TOAST_SPEED 1200
-#define TOAST_DURATION 10000
+#define TOAST_SPEED 600
+#define TOAST_DURATION 6000
 #define TOAST_FADEOUT_TIME 500
 
 typedef struct Toast {
