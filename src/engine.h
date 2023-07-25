@@ -1,7 +1,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <stdbool.h>
+#include "module.h"
 
 #define INTERFACEVERSION_VENGINESERVER "VEngineServer021"
 #define VENGINE_CLIENT_INTERFACE_VERSION_13 "VEngineClient013"
@@ -12,7 +12,6 @@ typedef void* IVEngineClient;
 
 void ClientCmd(const char* command);
 
-bool LoadEngineModule(void);
-void UnloadEngineModule(void);
+extern Module engine_module;
 
 #endif

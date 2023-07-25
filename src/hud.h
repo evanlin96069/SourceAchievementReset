@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "module.h"
 #include "utils.h"
 #include "vcall.h"
 
@@ -65,7 +66,6 @@ const wchar_t* ILocalizeFind(char const* tokenName);
 // IScheme
 HFont GetFont(const char* fontName, bool proportional);
 
-bool LoadHudModule(void);
-void UnloadHudModule(void);
+extern Module hud_module;
 
 #endif

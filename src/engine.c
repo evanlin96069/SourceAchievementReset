@@ -6,7 +6,7 @@
 
 DECL_IFUNC(PUBLIC, void, engine_client, ClientCmd, 7, const char*);
 
-bool LoadEngineModule(void) {
+static bool Load(void) {
     engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
     if (!engine_server) {
         Warning("Failed to get IVEngineServer interface.\n");
@@ -26,4 +26,9 @@ bool LoadEngineModule(void) {
     return true;
 }
 
-void UnloadEngineModule(void) {}
+static void Unload(void) {}
+
+Module engine_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+};

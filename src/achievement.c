@@ -96,7 +96,7 @@ CON_COMMAND(sar_achievement_status, "Shows status of all achievements",
 }
 
 #define ACH_HAS_COMPONENTS 0x0020
-static void ResetAchievement(int index) {
+static void AchievementReset(int index) {
     IAchievement* iach =
         (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
     CBaseAchievement* base = GetBaseAchievement(iach);
@@ -131,10 +131,10 @@ static void ResetAchievement(int index) {
     Msg("Failed to reset achievement.\n");
 }
 
-static void ResetAllAchievments(void) {
+static void AchievmentResetAll(void) {
     int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
-        ResetAchievement(i);
+        AchievementReset(i);
     }
 }
 
@@ -151,14 +151,14 @@ CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
         return;
     }
 
-    ResetAchievement(index);
+    AchievementReset(index);
 }
 
 CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
-    ResetAllAchievments();
+    AchievmentResetAll();
 }
 
-static void UnlockAchievement(int index) {
+static void AchievementUnlock(int index) {
     IAchievement* iach =
         (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
     (*achievement_mgr)
@@ -179,20 +179,20 @@ CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
         return;
     }
 
-    UnlockAchievement(atoi(args->argv[1]));
+    AchievementUnlock(atoi(args->argv[1]));
 }
 
 CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
             FCVAR_NONE) {
     int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
-        UnlockAchievement(i);
+        AchievementUnlock(i);
     }
 }
 
 CON_COMMAND(sar_full_game_reset, "Resets all achievements and bonus map",
             FCVAR_NONE) {
-    ResetAllAchievments();
+    AchievmentResetAll();
     BonusMapReset();
     ConVar* sv_unlockedchapters = FindVar("sv_unlockedchapters");
     if (sv_unlockedchapters) {
@@ -213,7 +213,7 @@ CONVAR(sar_hud_infinite_fall,
        0, FCVAR_NONE);
 
 #define ACHIEVEMENT_PORTAL_INFINITEFALL 119
-void DrawAchievementInfiniteFallHUD(void) {
+static void OnPaint(void) {
     static HFont hud_font = 0;
 
     int mode = sar_hud_infinite_fall->val;
@@ -285,7 +285,7 @@ void DrawAchievementInfiniteFallHUD(void) {
 }
 
 static bool should_unhook;
-bool LoadAchievementModule(void) {
+static bool Load(void) {
     should_unhook = false;
     achievement_mgr = GetAchievementMgr();
     if (!achievement_mgr) {
@@ -318,7 +318,7 @@ bool LoadAchievementModule(void) {
     return true;
 }
 
-void UnloadAchievementModule(void) {
+static void Unload(void) {
     // Unhook
     if (should_unhook) {
         UnhookVirtual(HOOK_IFUNC(achievement_mgr, AwardAchievement),
@@ -326,3 +326,9 @@ void UnloadAchievementModule(void) {
     }
     StopListeningForAllEvents(&listener);
 }
+
+Module achievement_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+    .callbakcs[MODULE_ON_PAINT] = &OnPaint,
+};

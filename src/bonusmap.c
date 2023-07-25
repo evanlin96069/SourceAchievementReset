@@ -53,7 +53,7 @@ static BonusMapsDatabase_func FindBonusMapsDatabase(void) {
     return (BonusMapsDatabase_func)(base + offset);
 }
 
-bool LoadBonusMapModule(void) {
+static bool Load(void) {
     CreateInterfaceFn gameUIFactory = Sys_GetFactory("gameui.dll");
     igameui = (IGameUI*)gameUIFactory(GAMEUI_INTERFACE_VERSION, NULL);
     if (!igameui) {
@@ -72,4 +72,9 @@ bool LoadBonusMapModule(void) {
     return true;
 }
 
-void UnloadBonusMapModule(void) {}
+static void Unload(void) {}
+
+Module bonusmap_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+};

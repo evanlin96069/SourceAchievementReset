@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "gameevents.h"
+#include "module.h"
 #include "vcall.h"
 
 typedef abstract_class IAchievement* IAchievement;
@@ -136,8 +137,6 @@ struct CBaseAchievement {
     bool show_on_HUD;  // New
 };
 
-void DrawAchievementInfiniteFallHUD(void);
-bool LoadAchievementModule(void);
-void UnloadAchievementModule(void);
+extern Module achievement_module;
 
 #endif

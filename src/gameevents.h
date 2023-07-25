@@ -1,6 +1,7 @@
 #ifndef GAMEEVENTS_H
 #define GAMEEVENTS_H
 
+#include "module.h"
 #include "vcall.h"
 
 #define INTERFACEVERSION_GAMEEVENTSMANAGER2 "GAMEEVENTSMANAGER002"
@@ -75,7 +76,6 @@ static inline void StopListeningForAllEvents(CGameEventListener *this) {
     }
 }
 
-bool LoadGameEventsModule(void);
-void UnloadGameEventsModule(void);
+extern Module gameevents_module;
 
 #endif

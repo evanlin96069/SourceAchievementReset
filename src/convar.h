@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "module.h"
 #include "utils.h"
 #include "vcall.h"
 
@@ -237,8 +238,6 @@ typedef void (*ConsoleColorPrintf_func)(void*, const Color*, const char*, ...);
 #define ConsoleColorPrintf(clr, fmt, ...) \
     VFUNC(icvar, ConsoleColorPrintf)(icvar, clr, fmt __VA_OPT__(, ) __VA_ARGS__)
 
-// Module
-bool LoadCvarModule(void);
-void UnloadCvarModule(void);
+extern Module cvar_module;
 
 #endif

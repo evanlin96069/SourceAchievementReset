@@ -4,10 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "achievement.h"
-#include "bonusmap.h"
 #include "dbg.h"
 #include "interfaces.h"
+#include "module.h"
 #include "vcall.h"
 
 static bool plugin_loaded = false;
@@ -25,22 +24,7 @@ static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
     engine_factory = interfaceFactory;
     server_factory = gameServerFactory;
 
-    if (!LoadEngineModule())
-        return false;
-
-    if (!LoadGameEventsModule())
-        return false;
-
-    if (!LoadCvarModule())
-        return false;
-
-    if (!LoadHudModule())
-        return false;
-
-    if (!LoadAchievementModule())
-        return false;
-
-    if (!LoadBonusMapModule())
+    if (!LoadModules())
         return false;
 
     const Color green = {110, 247, 75, 255};
@@ -55,14 +39,7 @@ static void virtual Unload(void *this) {
         skip_unload = false;
         return;
     }
-
-    UnloadEngineModule();
-    UnloadGameEventsModule();
-    UnloadCvarModule();
-    UnloadHudModule();
-    UnloadAchievementModule();
-    UnloadBonusMapModule();
-
+    UnloadModules();
     plugin_loaded = false;
 }
 

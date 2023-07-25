@@ -5,7 +5,7 @@
 #include "dbg.h"
 #include "interfaces.h"
 
-bool LoadGameEventsModule(void) {
+static bool Load(void) {
     game_event_mgr = engine_factory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
     if (!game_event_mgr) {
         Warning("Failed to get IGameEventManager2 interface.\n");
@@ -15,4 +15,9 @@ bool LoadGameEventsModule(void) {
     return true;
 }
 
-void UnloadGameEventsModule(void) {}
+static void Unload(void) {}
+
+Module gameevents_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+};

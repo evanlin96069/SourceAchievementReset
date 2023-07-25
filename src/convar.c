@@ -59,7 +59,7 @@ static int virtual GetDLLIdentifier(ConCommandBase* this) {
     return DLL_identifier;
 }
 
-bool LoadCvarModule(void) {
+static bool Load(void) {
     icvar = engine_factory(CVAR_INTERFACE_VERSION, NULL);
     if (!icvar) {
         Warning("Failed to get ICvar interface.\n");
@@ -104,7 +104,7 @@ bool LoadCvarModule(void) {
     return true;
 }
 
-void UnloadCvarModule(void) {
+static void Unload(void) {
     UnregisterConCommands(DLL_identifier);
 
     _ConVar* curr = cvar_list.next;
@@ -113,3 +113,8 @@ void UnloadCvarModule(void) {
         curr = curr->next;
     }
 }
+
+Module cvar_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+};

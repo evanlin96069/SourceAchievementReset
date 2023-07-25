@@ -1,10 +1,10 @@
 #ifndef BONUSMAP_H
 #define BONUSMAP_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "keyvalues.h"
+#include "module.h"
 #include "utils.h"
 
 #define GAMEUI_INTERFACE_VERSION "GameUI011"
@@ -102,7 +102,7 @@ typedef CBonusMapsDatabase *(*BonusMapsDatabase_func)(void);
 extern BonusMapsDatabase_func BonusMapsDatabase;
 
 void BonusMapReset(void);
-bool LoadBonusMapModule(void);
-void UnloadBonusMapModule(void);
+
+extern Module bonusmap_module;
 
 #endif

@@ -2,7 +2,6 @@
 
 #include <string.h>
 
-#include "achievement.h"
 #include "dbg.h"
 #include "hook.h"
 #include "interfaces.h"
@@ -60,13 +59,6 @@ DECL_IFUNC(PUBLIC, HFont, ischeme, GetFont, 3, const char *, bool);
 int screen_width = 0;
 int screen_height = 0;
 
-static void OnPaint(void) {
-    GetScreenSize(&screen_width, &screen_height);
-
-    ToastOnPaint();
-    DrawAchievementInfiniteFallHUD();
-}
-
 static int vtidx_PaintTraverse = 0;
 typedef void (*virtual PaintTraverse_func)(void *, VPANEL, bool, bool);
 static PaintTraverse_func orig_PaintTraverse;
@@ -85,12 +77,15 @@ static void virtual Hook_PaintTraverse(void *this, VPANEL vguiPanel,
     } else if (panel_id == vguiPanel) {
         // This is not perfect, but if we don't draw at the left side of the
         // screen it should be unnoticeable.
-        OnPaint();
+        GetScreenSize(&screen_width, &screen_height);
+        SingalModules(MODULE_ON_PAINT);
     }
 }
 
+static void OnPaint(void) { ToastOnPaint(); }
+
 static bool should_unhook;
-bool LoadHudModule(void) {
+static bool Load(void) {
     should_unhook = false;
 
     mat_system_surface =
@@ -153,7 +148,7 @@ bool LoadHudModule(void) {
     orig_PaintTraverse = HookVirtual(HOOK_VTABLE(ipanel, vtidx_PaintTraverse),
                                      &Hook_PaintTraverse);
     if (!orig_PaintTraverse) {
-        Warning("Failed to hook Paint.\n");
+        Warning("Failed to hook PaintTraverse.\n");
         return false;
     }
 
@@ -164,9 +159,15 @@ bool LoadHudModule(void) {
     return true;
 }
 
-void UnloadHudModule(void) {
+static void Unload(void) {
     if (should_unhook) {
         UnhookVirtual(HOOK_VTABLE(ipanel, vtidx_PaintTraverse),
                       orig_PaintTraverse);
     }
 }
+
+Module hud_module = {
+    .Load = &Load,
+    .Unload = &Unload,
+    .callbakcs[MODULE_ON_PAINT] = &OnPaint,
+};
