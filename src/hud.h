@@ -19,19 +19,8 @@ typedef void* ISchemeManager;
 typedef void* IPanel;
 typedef void* ILocalize;
 typedef void* IScheme;
-typedef abstract_class IEngineVGui* IEngineVGui;
 
 typedef uint32_t VPANEL;
-
-typedef enum VGuiPanel_t {
-    PANEL_ROOT = 0,
-    PANEL_GAMEUIDLL,
-    PANEL_CLIENTDLL,
-    PANEL_TOOLS,
-    PANEL_INGAMESCREENS,
-    PANEL_GAMEDLL,
-    PANEL_CLIENTDLL_TOOLS
-} VGuiPanel_t;
 
 typedef enum FontDrawType_t {
     FONT_DRAW_DEFAULT = 0,
@@ -39,12 +28,6 @@ typedef enum FontDrawType_t {
     FONT_DRAW_ADDITIVE,
     FONT_DRAW_TYPE_COUNT = 2,
 } FontDrawType_t;
-
-abstract_class IEngineVGui {
-    void (*virtual dtor)(void* this);
-    uint32_t (*virtual GetPanel)(void* this, VGuiPanel_t type);
-    bool (*virtual IsGameUIVisible)(void* this);
-};
 
 typedef unsigned long HScheme;
 typedef unsigned long HFont;

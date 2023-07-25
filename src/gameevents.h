@@ -75,4 +75,7 @@ static inline void StopListeningForAllEvents(CGameEventListener *this) {
     }
 }
 
+bool LoadGameEventsModule(void);
+void UnloadGameEventsModule(void);
+
 #endif

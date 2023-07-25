@@ -40,10 +40,11 @@ static void virtual Hooked_AwardAchievement(void* this, int id) {
     if (!(*iach)->IsAchieved(iach))
         return;
     const char* achievement_name = (*iach)->GetName(iach);
-    ConsoleColorPrintf(&green,
-                       "Achievement Unlocked!\n"
-                       "%s\n",
-                       achievement_name);
+    ConsoleColorPrintf(&green, "Achievement Unlocked!\n");
+
+    char cmd[256] = "";
+    snprintf(cmd, sizeof(cmd), "echo #%s#", achievement_name);
+    ClientCmd(cmd);
 
     ToastAddAchieved(achievement_name);
 }

@@ -6,7 +6,6 @@
 
 #include "achievement.h"
 #include "bonusmap.h"
-#include "convar.h"
 #include "dbg.h"
 #include "interfaces.h"
 #include "vcall.h"
@@ -26,17 +25,11 @@ static bool virtual Load(void *this, CreateInterfaceFn interfaceFactory,
     engine_factory = interfaceFactory;
     server_factory = gameServerFactory;
 
-    engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
-    if (!engine_server) {
-        Warning("Failed to get IVEngineServer interface.\n");
+    if (!LoadEngineModule())
         return false;
-    }
 
-    game_event_mgr = engine_factory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
-    if (!game_event_mgr) {
-        Warning("Failed to get IGameEventManager2 interface.\n");
+    if (!LoadGameEventsModule())
         return false;
-    }
 
     if (!LoadCvarModule())
         return false;
@@ -63,6 +56,8 @@ static void virtual Unload(void *this) {
         return;
     }
 
+    UnloadEngineModule();
+    UnloadGameEventsModule();
     UnloadCvarModule();
     UnloadHudModule();
     UnloadAchievementModule();

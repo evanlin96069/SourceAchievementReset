@@ -123,12 +123,6 @@ bool LoadHudModule(void) {
         }
     }
 
-    engine_vgui = engine_factory(VENGINE_VGUI_VERSION, NULL);
-    if (!engine_vgui) {
-        Warning("Failed to get IEngineVGui interface.\n");
-        return false;
-    }
-
     ipanel = engine_factory(VGUI_PANEL_INTERFACE_VERSION, NULL);
     if (!ipanel) {
         Warning("Failed to get IPanel interface.\n");
