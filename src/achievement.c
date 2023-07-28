@@ -284,9 +284,7 @@ static void OnPaint(void) {
     DrawPrintText(buf, len, FONT_DRAW_DEFAULT);
 }
 
-static bool should_unhook;
 static bool Load(void) {
-    should_unhook = false;
     achievement_mgr = GetAchievementMgr();
     if (!achievement_mgr) {
         Warning("Failed to get IAchievementMgr interface.\n");
@@ -301,8 +299,6 @@ static bool Load(void) {
         Warning("Failed to hook AwardAchievement.\n");
         return false;
     }
-
-    should_unhook = true;
 
     ListenForGameEvent(&listener, "achievement_event", false);
 
@@ -320,9 +316,10 @@ static bool Load(void) {
 
 static void Unload(void) {
     // Unhook
-    if (should_unhook) {
+    if (orig_AwardAchievement) {
         UnhookVirtual(HOOK_IFUNC(achievement_mgr, AwardAchievement),
                       orig_AwardAchievement);
+        orig_AwardAchievement = NULL;
     }
     StopListeningForAllEvents(&listener);
 }

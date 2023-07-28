@@ -84,10 +84,7 @@ static void virtual Hook_PaintTraverse(void *this, VPANEL vguiPanel,
 
 static void OnPaint(void) { ToastOnPaint(); }
 
-static bool should_unhook;
 static bool Load(void) {
-    should_unhook = false;
-
     mat_system_surface =
         engine_factory(MAT_SYSTEM_SURFACE_INTERFACE_VERSION_6, NULL);
     if (mat_system_surface) {
@@ -152,17 +149,16 @@ static bool Load(void) {
         return false;
     }
 
-    should_unhook = true;
-
     ToastInit();
 
     return true;
 }
 
 static void Unload(void) {
-    if (should_unhook) {
+    if (orig_PaintTraverse) {
         UnhookVirtual(HOOK_VTABLE(ipanel, vtidx_PaintTraverse),
                       orig_PaintTraverse);
+        orig_PaintTraverse = NULL;
     }
 }
 
