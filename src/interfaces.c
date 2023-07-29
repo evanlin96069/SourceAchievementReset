@@ -16,6 +16,7 @@ ISchemeManager* scheme_mgr = NULL;
 IPanel* ipanel = NULL;
 IScheme* ischeme = NULL;
 ILocalize* ilocalize = NULL;
+struct CServerPlugin* plugin_handler = NULL;
 
 static inline void* Sys_GetProcAddress(const char* pModuleName,
                                        const char* pName) {

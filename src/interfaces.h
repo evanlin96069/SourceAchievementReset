@@ -6,6 +6,8 @@
 #include "gameevents.h"
 #include "hud.h"
 
+struct CServerPlugin;
+
 typedef void* (*CreateInterfaceFn)(const char* name, int* ret);
 
 extern CreateInterfaceFn engine_factory;
@@ -20,7 +22,7 @@ extern ISchemeManager* scheme_mgr;
 extern IPanel* ipanel;
 extern IScheme* ischeme;
 extern ILocalize* ilocalize;
+extern struct CServerPlugin* plugin_handler;
 
 CreateInterfaceFn Sys_GetFactory(const char* pModuleName);
-
 #endif

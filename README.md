@@ -28,6 +28,9 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
 `sar_full_game_reset`
   - Resets all achievements and bonus map
 
+`sar_unload`
+  - Unloads this plugin
+
 ## ConVar
 `sar_toast`
  - Draws achievement toast HUD
