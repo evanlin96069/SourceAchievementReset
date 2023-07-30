@@ -309,7 +309,10 @@ static bool Load(void) {
     InitCommand(sar_achievement_unlock);
     InitCommand(sar_achievement_unlock_all);
     InitCommand(sar_full_game_reset);
-    InitConVar(sar_hud_infinite_fall);
+
+    if (FindCommand("upgrade_portalgun")) {
+        InitConVar(sar_hud_infinite_fall);
+    }
 
     return true;
 }
