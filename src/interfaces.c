@@ -21,7 +21,13 @@ struct CServerPlugin* plugin_handler = NULL;
 static inline void* Sys_GetProcAddress(const char* pModuleName,
                                        const char* pName) {
     HMODULE hModule = (HMODULE)GetModuleHandle(pModuleName);
-    return (void*)GetProcAddress(hModule, pName);
+    if (!hModule)
+        return NULL;
+
+    void* factory = (void*)GetProcAddress(hModule, pName);
+
+    CloseHandle(hModule);
+    return factory;
 }
 
 CreateInterfaceFn Sys_GetFactory(const char* pModuleName) {
