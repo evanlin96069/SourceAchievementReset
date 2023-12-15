@@ -45,7 +45,7 @@ typedef struct ToastQueue {
 
 ToastQueue toast_queue = {0};
 
-CONVAR(sar_toast, "Draws achievement toast HUD", 1, FCVAR_DONTRECORD);
+CONVAR(sar_toast, "Draws achievement toast HUD", 1, FCVAR_NONE);
 
 static inline void ToastQueueInit(void) {
     toast_queue.front = -1;

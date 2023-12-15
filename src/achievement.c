@@ -138,7 +138,8 @@ static void AchievmentResetAll(void) {
     }
 }
 
-CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_reset, "Clears specified achievement",
+            FCVAR_DONTRECORD) {
     if (args->argc != 2) {
         Msg("Usage: %s <index>\n", args->argv[0]);
         return;
@@ -154,7 +155,8 @@ CON_COMMAND(sar_achievement_reset, "Clears specified achievement", FCVAR_NONE) {
     AchievementReset(index);
 }
 
-CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
+CON_COMMAND(sar_achievement_reset_all, "Clears all achievements",
+            FCVAR_DONTRECORD) {
     AchievmentResetAll();
 }
 
@@ -168,7 +170,7 @@ static void AchievementUnlock(int index) {
 }
 
 CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
-            FCVAR_NONE) {
+            FCVAR_DONTRECORD) {
     if (sar_cheats->val == 0) {
         Msg("sar_cheats not enabled.\n");
         return;
@@ -190,7 +192,7 @@ CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
 }
 
 CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
-            FCVAR_NONE) {
+            FCVAR_DONTRECORD) {
     if (sar_cheats->val == 0) {
         Msg("sar_cheats not enabled.\n");
         return;
@@ -203,7 +205,7 @@ CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
 }
 
 CON_COMMAND(sar_full_game_reset, "Resets all achievements and bonus map",
-            FCVAR_NONE) {
+            FCVAR_DONTRECORD) {
     AchievmentResetAll();
     BonusMapReset();
     ConVar* sv_unlockedchapters = FindVar("sv_unlockedchapters");
