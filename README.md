@@ -32,8 +32,11 @@ Tested on Portal 3420, Portal 5135, Portal Steampipe.
   - Unloads this plugin
 
 ## ConVar
+`sar_cheats`
+ - Enable achievement unlock
+
 `sar_toast`
  - Draws achievement toast HUD
- 
+
 `sar_hud_infinite_fall`
  - Draws Portal infinite fall achievement HUD

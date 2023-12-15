@@ -158,6 +158,8 @@ CON_COMMAND(sar_achievement_reset_all, "Clears all achievements", FCVAR_NONE) {
     AchievmentResetAll();
 }
 
+CONVAR(sar_cheats, "Enable achievement unlock", 0, FCVAR_CHEAT | FCVAR_DEMO);
+
 static void AchievementUnlock(int index) {
     IAchievement* iach =
         (*achievement_mgr)->GetAchievementByIndex(achievement_mgr, index);
@@ -167,6 +169,11 @@ static void AchievementUnlock(int index) {
 
 CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
             FCVAR_NONE) {
+    if (sar_cheats->val == 0) {
+        Msg("sar_cheats not enabled.\n");
+        return;
+    }
+
     if (args->argc != 2) {
         Msg("Usage: %s <index>\n", args->argv[0]);
         return;
@@ -184,6 +191,11 @@ CON_COMMAND(sar_achievement_unlock, "Unlocks specified achievement",
 
 CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
             FCVAR_NONE) {
+    if (sar_cheats->val == 0) {
+        Msg("sar_cheats not enabled.\n");
+        return;
+    }
+
     int count = (*achievement_mgr)->GetAchievementCount(achievement_mgr);
     for (int i = 0; i < count; i++) {
         AchievementUnlock(i);
@@ -303,6 +315,7 @@ static bool Load(void) {
     ListenForGameEvent(&listener, "achievement_event", false);
 
     // Init commands
+    InitConVar(sar_cheats);
     InitCommand(sar_achievement_status);
     InitCommand(sar_achievement_reset);
     InitCommand(sar_achievement_reset_all);
