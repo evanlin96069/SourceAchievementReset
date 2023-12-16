@@ -15,8 +15,8 @@ CON_COMMAND(sar_bonusmap_reset, "Resets the bonus map database",
 
 void BonusMapReset(void) {
     KeyValues* saved_data;
-    if (FindCommand("vr_activate")) {
-        // new steampipe
+    if (engine_client_version == 14) {
+        // Steampipe
         saved_data = BonusMapsDatabase()->bonus_map_saved_data;
     } else {
         saved_data =

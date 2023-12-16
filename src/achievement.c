@@ -206,15 +206,24 @@ CON_COMMAND(sar_achievement_unlock_all, "Unlocks all achievements",
 
 CON_COMMAND(sar_full_game_reset, "Resets all achievements and bonus map",
             FCVAR_DONTRECORD) {
+    static ConVar* sv_unlockedchapters = NULL;
+    static ConVar* sv_cheats = NULL;
+
+    if (!sv_unlockedchapters) {
+        sv_unlockedchapters = FindVar("sv_unlockedchapters");
+    }
+
+    if (!sv_cheats) {
+        sv_cheats = FindVar("sv_cheats");
+    }
+
     AchievmentResetAll();
     BonusMapReset();
-    ConVar* sv_unlockedchapters = FindVar("sv_unlockedchapters");
     if (sv_unlockedchapters) {
         const char* default_val = sv_unlockedchapters->parent->default_val;
         SetValue(sv_unlockedchapters, default_val);
     }
 
-    ConVar* sv_cheats = FindVar("sv_cheats");
     if (sv_cheats) {
         SetIntValue(sv_cheats, 0);
     }

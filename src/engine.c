@@ -13,14 +13,19 @@ static bool Load(void) {
         return false;
     }
 
-    engine_client = engine_factory(VENGINE_CLIENT_INTERFACE_VERSION_13, NULL);
-    if (!engine_client) {
+    // Fun fact: Steampipe supports both 13 and 14
+    engine_client = engine_factory(VENGINE_CLIENT_INTERFACE_VERSION_14, NULL);
+    if (engine_client) {
+        engine_client_version = 14;
+    } else {
         engine_client =
-            engine_factory(VENGINE_CLIENT_INTERFACE_VERSION_14, NULL);
-    }
-    if (!engine_client) {
-        Warning("Failed to get IVEngineClient interface.\n");
-        return false;
+            engine_factory(VENGINE_CLIENT_INTERFACE_VERSION_13, NULL);
+        if (engine_client) {
+            engine_client_version = 13;
+        } else {
+            Warning("Failed to get IVEngineClient interface.\n");
+            return false;
+        }
     }
 
     return true;
