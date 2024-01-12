@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - '.gitignore'
+      - 'LICENSE'
+      - 'README.md'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up clang
+      uses: egor-tensin/setup-clang@v1
+
+    - name: Build project
+      run: |
+        ./compile.bat
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: sar-dll
+        path: bin/sar.dll
