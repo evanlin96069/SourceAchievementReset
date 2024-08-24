@@ -239,6 +239,9 @@ CONVAR(sar_hud_infinite_fall,
 static void OnPaint(void) {
     static HFont hud_font = 0;
 
+    if (!IsInGame())
+        return;
+
     int mode = sar_hud_infinite_fall->val;
     if (!mode)
         return;

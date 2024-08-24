@@ -11,6 +11,7 @@ typedef void* IVEngineServer;
 typedef void* IVEngineClient;
 
 void ClientCmd(const char* command);
+bool IsInGame(void);
 
 extern Module engine_module;
 

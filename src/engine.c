@@ -5,6 +5,7 @@
 #include "vcall.h"
 
 DECL_IFUNC(PUBLIC, void, engine_client, ClientCmd, 7, const char*);
+DECL_IFUNC(PUBLIC, bool, engine_client, IsInGame, 26);
 
 static bool Load(void) {
     engine_server = engine_factory(INTERFACEVERSION_VENGINESERVER, NULL);
